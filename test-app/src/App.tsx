@@ -10,9 +10,8 @@ function App() {
         return "Must be at least 3 characters long."
       }
     },
-    init: 'initial todo'
   })
-  const [todos, setTodos] = useState<string[]>([])
+  const [todos, setTodos] = useState<(string | number)[]>([])
   return (
     <div className="App">
       <Text {...newTodo}

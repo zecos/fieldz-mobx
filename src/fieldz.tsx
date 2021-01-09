@@ -19,11 +19,11 @@ export const useText = (_props: HookProps | string | number): FCProps => {
     }
   }
   const props: HookProps = _props as HookProps
-  const [state, setState] = React.useState<string>((props.init+'') || "")
+
+  const [state, setState] = React.useState<string | number>(props.init || "")
   const [errors, setErrors] = React.useState<Errors>([])
   const [touched, setTouched] = React.useState<boolean>(false)
   const handleChange = (e: CE) => {
-
     if (props.validate) {
       setErrors(props.validate(e.target.value))
     }
@@ -58,7 +58,7 @@ export const useText = (_props: HookProps | string | number): FCProps => {
 
 
 type FCProps = {
-  state: string
+  state: string | number
   setState: React.Dispatch<React.SetStateAction<string>>
   handleChange: (e:CE) => void
   name?: {
