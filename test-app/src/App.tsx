@@ -11,7 +11,7 @@ function App() {
       }
     },
   })
-  const [todos, setTodos] = useState<(string | number)[]>([])
+  const [todos, setTodos] = useState<string[]>([])
   return (
     <div className="App">
       <Text {...newTodo}

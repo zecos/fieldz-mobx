@@ -66,6 +66,9 @@ For instance, you could have a custom handler that parse the value into an integ
 But that is just an example...this is a really good feature, because it means this whole thing is basically infinitely flexible, which can come in handy for corner cases.
 
 
+### Todo
+
+add generics to the type for useText (for numbers or other things that can be converted into strings)
 
 ### Contributing
 
