@@ -61,17 +61,17 @@ const getClassName = (props: FCProps, addendum=""): string => {
 
 export const Text: React.FC<FCProps> = props => {
   return (
-    <div className={`${styles.css} ${getClassName(props)}`}>
+    <div className={`${styles.container} ${getClassName(props)}`}>
       {!props.name ? "" : (
         <>
-          <label className={getClassName(props, "-label")}>
+          <label className={`${styles.textLabel} ${getClassName(props, "-label")}`}>
             {props.name.title}
           </label>
           <br />
         </>
       )}
       <input
-        className={props.className}
+        className={`${styles.textInput} ${getClassName(props, "-input")}`}
         value={props.state}
         onChange={props.handleChange}
       />

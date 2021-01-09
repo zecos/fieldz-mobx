@@ -1,3 +1,30 @@
-.label {
-  font-size: .8rem;
+.errors {
+  color: red;
+  padding: 6px 10px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.textLabel {
+  padding: 0 .8rem;
+  display: block;
+}
+
+.textInput {
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  padding: .2rem .4rem;
+  margin: .1rem 0;
+  font-size: 1rem;
+  box-sizing: border-box;
+  outline: 0;
+  flex: 0 0 100%;
+  display: block;
+  max-width: 20rem;
 }
