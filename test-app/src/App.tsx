@@ -9,7 +9,8 @@ function App() {
       if (val.length < 3) {
         return "Must be at least 3 characters long."
       }
-    }
+    },
+    init: 'initial todo'
   })
   const [todos, setTodos] = useState<string[]>([])
   return (

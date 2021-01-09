@@ -3,19 +3,27 @@ import { camelToTitle, titleToKebab, kebabToSnake } from './util'
 import styles from './fieldz.css'
 
 type HookProps = {
-  name?: string,
+  name?: string
   validate?: (input: string) => Errors
+  init?: string | number
 }
 type Errors = string[] | string | void
 
 type CE = React.ChangeEvent<HTMLInputElement>
 type KBE = React.KeyboardEvent
 
-export const useText = (props: HookProps = {}): FCProps => {
-  const [state, setState] = React.useState<string>("")
+export const useText = (_props: HookProps | string | number): FCProps => {
+  if (["string", "number"].includes(typeof _props)) {
+    _props = {
+      init: _props as string
+    }
+  }
+  const props: HookProps = _props as HookProps
+  const [state, setState] = React.useState<string>((props.init+'') || "")
   const [errors, setErrors] = React.useState<Errors>([])
   const [touched, setTouched] = React.useState<boolean>(false)
   const handleChange = (e: CE) => {
+
     if (props.validate) {
       setErrors(props.validate(e.target.value))
     }
