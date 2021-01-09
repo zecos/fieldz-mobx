@@ -3,14 +3,24 @@ import { camelToTitle, titleToKebab, kebabToSnake } from './util'
 import styles from './fieldz.css'
 
 type HookProps = {
-  name?: string
+  name?: string,
+  validate?: (input: string) => Errors
 }
+type Errors = string[] | string | void
 
 type CE = React.ChangeEvent<HTMLInputElement>
+type KBE = React.KeyboardEvent
 
 export const useText = (props: HookProps = {}): FCProps => {
   const [state, setState] = React.useState<string>("")
-  const handleChange = (e: CE) => setState(e.target.value)
+  const [errors, setErrors] = React.useState<Errors>([])
+  const [touched, setTouched] = React.useState<boolean>(false)
+  const handleChange = (e: CE) => {
+    if (props.validate) {
+      setErrors(props.validate(e.target.value))
+    }
+    setState(e.target.value)
+  }
   let title = ''
   let kebab = ''
   let snake = ''
@@ -30,9 +40,14 @@ export const useText = (props: HookProps = {}): FCProps => {
       title,
       kebab,
       snake,
-    }
+    },
+    errors,
+    setErrors,
+    touched,
+    setTouched,
   }
 }
+
 
 type FCProps = {
   state: string
@@ -46,6 +61,11 @@ type FCProps = {
   }
   className?: string
   children?: React.ReactNode
+  onEnter?: (e: KBE) => void
+  errors?: Errors
+  setErrors?: React.Dispatch<React.SetStateAction<Errors>>
+  touched?: boolean
+  setTouched?: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 const getClassName = (props: FCProps, addendum=""): string => {
@@ -59,7 +79,35 @@ const getClassName = (props: FCProps, addendum=""): string => {
   return className
 }
 
+const renderError = error => <div key={error.toString()} className={styles.error}>{error.toString()}</div>
+
+const renderErrors = (errors: Errors) => {
+  if (typeof errors === "undefined" || !errors.length) {
+    return ""
+  }
+  // @ts-ignore
+  errors = [].concat(errors) as string[]
+  return (
+    <div className={styles.errors}>
+      {errors.map(renderError)}
+    </div>
+  )
+}
+
 export const Text: React.FC<FCProps> = props => {
+  let handleKeyDown;
+  if (props.onEnter) {
+    handleKeyDown = (e: KBE) => {
+      if (e.keyCode === 13) {
+        props.onEnter!(e)
+      }
+    }
+  }
+  const handleBlur = () => {
+    if (!props.touched && props.setTouched) {
+      props.setTouched(true)
+    }
+  }
   return (
     <div className={`${styles.container} ${getClassName(props)}`}>
       {!props.name ? "" : (
@@ -74,7 +122,10 @@ export const Text: React.FC<FCProps> = props => {
         className={`${styles.textInput} ${getClassName(props, "-input")}`}
         value={props.state}
         onChange={props.handleChange}
+        onKeyDown={handleKeyDown}
+        onBlur={handleBlur}
       />
+      {props.touched && renderErrors(props.errors || [])}
     </div>
   )
 }

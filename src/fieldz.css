@@ -1,7 +1,8 @@
 .errors {
   color: red;
-  padding: 6px 10px;
-  font-size: 1rem;
+  padding: .2rem .4rem;
+  margin-left: .9rem;
+  font-size: .9rem;
   box-sizing: border-box;
 }
 

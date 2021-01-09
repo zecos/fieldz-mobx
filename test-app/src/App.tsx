@@ -1,19 +1,30 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useText, Text } from 'fieldz'
 import './App.scss';
 
 function App() {
-  const testField = useText({
-    name: 'myTest',
+  const newTodo = useText({
+    name: 'newTodo',
+    validate: val => {
+      if (val.length < 3) {
+        return "Must be at least 3 characters long."
+      }
+    }
   })
-  const testField2 = useText({
-    name: 'myTest2',
-  })
+  const [todos, setTodos] = useState<string[]>([])
   return (
     <div className="App">
-      <Text {...testField} />
-      <Text {...testField2} />
-      {testField.state}
+      <Text {...newTodo}
+        onEnter={() => {
+          setTodos([
+            ...todos,
+            newTodo.state
+          ])
+          newTodo.setState('')
+        }}/>
+      <ul>
+        {todos.map((todo, i) => <li key={i}>{todo}</li>)}
+      </ul>
     </div>
   );
 }
