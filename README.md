@@ -44,13 +44,32 @@ function App() {
     </div>
   );
 }
-```
 
 export default App;
+```
+
+Any of the properties passed to the `Text` component can be overridden, like normally. This means you can do stuff like create a custom `handleChange` handler.
+
+For instance, you could have a custom handler that parse the value into an integer if it is able to:
+
+```ts
+<Text {...newTodo}
+  handleChange={e => {
+    const {value} = e.target
+    if (!isNaN(parseInt(value)) {
+      newTodo.setState(parseInt(value))
+    }
+  }}
+/>
+```
+
+But that is just an example...this is a really good feature, because it means this whole thing is basically infinitely flexible, which can come in handy for corner cases.
 
 
 
-to test
+### Contributing
+
+To Test
 
 ```
 yarn
