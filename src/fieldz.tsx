@@ -12,7 +12,7 @@ type Errors = string[] | string | void
 type CE = React.ChangeEvent<HTMLInputElement>
 type KBE = React.KeyboardEvent
 
-export const useText = (_props: HookProps | string | number = {}): FCProps => {
+export const useText = (_props: HookProps | string | number = {}): UseTextReturn => {
   if (["string", "number"].includes(typeof _props)) {
     _props = {
       init: _props as string
@@ -56,6 +56,22 @@ export const useText = (_props: HookProps | string | number = {}): FCProps => {
   }
 }
 
+
+type UseTextReturn = {
+  state: any
+  setState: React.Dispatch<React.SetStateAction<any>>
+  handleChange: (e:CE) => void
+  name: {
+    title: string
+    kebab: string
+    camel: string
+    snake: string
+  }
+  errors: Errors
+  setErrors: React.Dispatch<React.SetStateAction<Errors>>
+  touched: boolean
+  setTouched: React.Dispatch<React.SetStateAction<boolean>>
+}
 
 type FCProps = {
   state: any
