@@ -7,7 +7,7 @@ type HookProps = {
   validate?: (input: string) => Errors
   init?: string | number
 }
-type Errors = string[] | string | void
+type Errors = string[] | string | Error[] | void
 
 type CE = React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
 type KBE = React.KeyboardEvent
@@ -111,9 +111,21 @@ const renderErrors = (errors: Errors) => {
   }
   // @ts-ignore
   errors = [].concat(errors) as string[]
+  const resultErrors: string[] = []
+  for (const error of errors) {
+    const err = error as unknown as Error
+    if (err instanceof Error) {
+      resultErrors.push(err.toString())
+    } else if (typeof error === "string") {
+      resultErrors.push(err)
+    } else {
+      console.error(`Error invalid. Errors must be of type string or Error`)
+      console.error(err)
+    }
+  }
   return (
     <div className={styles.errors}>
-      {errors.map(renderError)}
+      {resultErrors.map(renderError)}
     </div>
   )
 }
