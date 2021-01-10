@@ -12,7 +12,7 @@ type Errors = string[] | string | void
 type CE = React.ChangeEvent<HTMLInputElement>
 type KBE = React.KeyboardEvent
 
-export const useText = (_props: HookProps | string | number): FCProps => {
+export const useText = (_props: HookProps | string | number = {}): FCProps => {
   if (["string", "number"].includes(typeof _props)) {
     _props = {
       init: _props as string
