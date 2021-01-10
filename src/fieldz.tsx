@@ -9,7 +9,7 @@ type HookProps = {
 }
 type Errors = string[] | string | void
 
-type CE = React.ChangeEvent<HTMLInputElement>
+type CE = React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
 type KBE = React.KeyboardEvent
 
 export const useText = (_props: HookProps | string | number = {}): UseTextReturn => {
