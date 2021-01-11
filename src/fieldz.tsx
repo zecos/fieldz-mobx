@@ -2,25 +2,29 @@ import * as React from 'react'
 import { camelToTitle, titleToKebab, kebabToSnake } from './util'
 import styles from './fieldz.css'
 
-type HookProps = {
+export type HookPropsObj<T> = {
   name?: string
   validate?: (input: string) => Errors
-  init?: string | number
+  init?: T
 }
-type Errors = string[] | string | Error[] | void
+export type Errors = string[] | string | Error[] | void
 
 type CE = React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
 type KBE = React.KeyboardEvent
 
-export const useText = (_props: HookProps | string | number = {}): UseTextReturn => {
+export type HookProps<T> = HookPropsObj<T> | string | number
+export function useText(props: string): UseTextReturn<string>;
+export function useText(props: number): UseTextReturn<number>;
+export function useText(props: HookPropsObj<string>): UseTextReturn<string>;
+export function useText(props: HookPropsObj<number>): UseTextReturn<number>;
+export function useText(_props: any= {}): any {
   if (["string", "number"].includes(typeof _props)) {
     _props = {
-      init: _props as string
+      init: _props as string | number
     }
   }
-  const props: HookProps = _props as HookProps
-
-  const [state, setState] = React.useState<any>(props.init || "")
+  const props: HookPropsObj<string|number> = _props as HookPropsObj<string|number>
+  const [state, setState] = React.useState<string|number>(props.init || "")
   const [errors, setErrors] = React.useState<Errors>([])
   const [touched, setTouched] = React.useState<boolean>(false)
   const handleChange = (e: CE) => {
@@ -57,25 +61,9 @@ export const useText = (_props: HookProps | string | number = {}): UseTextReturn
 }
 
 
-type UseTextReturn = {
-  state: any
-  setState: React.Dispatch<React.SetStateAction<any>>
-  handleChange: (e:CE) => void
-  name: {
-    title: string
-    kebab: string
-    camel: string
-    snake: string
-  }
-  errors: Errors
-  setErrors: React.Dispatch<React.SetStateAction<Errors>>
-  touched: boolean
-  setTouched: React.Dispatch<React.SetStateAction<boolean>>
-}
-
-type FCProps = {
-  state: any
-  setState: React.Dispatch<React.SetStateAction<any>>
+type FCProps<T> = {
+  state: T
+  setState: React.Dispatch<React.SetStateAction<T>>
   handleChange: (e:CE) => void
   name?: {
     title: string
@@ -91,6 +79,10 @@ type FCProps = {
   touched?: boolean
   setTouched?: React.Dispatch<React.SetStateAction<boolean>>
 }
+export type UseTextReturn<T> = {
+  [P in keyof FCProps<T>]-?: FCProps<T>[P]
+}
+
 
 const getClassName = (props: FCProps, addendum=""): string => {
   let className: string = props.className || ''
@@ -113,7 +105,7 @@ const renderErrors = (errors: Errors) => {
   errors = [].concat(errors) as string[]
   const resultErrors: string[] = []
   for (const error of errors) {
-    const err = error as unknown as Error
+    const err = error as any
     if (err instanceof Error) {
       resultErrors.push(err.toString())
     } else if (typeof error === "string") {
