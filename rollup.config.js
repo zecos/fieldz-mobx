@@ -10,7 +10,7 @@ import svgr from '@svgr/rollup'
 import pkg from './package.json'
 
 export default {
-  input: 'src/fieldz.tsx',
+  input: 'src/index.ts',
   output: [
     {
       file: pkg.main,

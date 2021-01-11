@@ -12,10 +12,10 @@
     "url": "https://github.com/zecos/fieldz/issues"
   },
   "homepage": "https://github.com/zecos/fieldz",
-  "main": "dist/fieldz.js",
-  "module": "dist/fieldz.es.js",
-  "types": "dist/fieldz.d.ts",
-  "jsnext:main": "dist/fieldz.es.js",
+  "main": "dist/index.js",
+  "module": "dist/index.es.js",
+  "types": "dist/index.d.ts",
+  "jsnext:main": "dist/index.es.js",
   "keywords": [
     "zecos",
     "forms",

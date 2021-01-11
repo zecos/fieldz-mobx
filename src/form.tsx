@@ -1,23 +1,11 @@
 import {
-  HookProps,
   UseTextReturn,
   Errors,
-  useText,
 } from './fieldz'
 
-type SubmitType = {
-  values: {
-    [key: string]: any
-  }
-  errors: {
-    [key: string]: string
-  }
-  touched: {
-    [key: string]: boolean
-  }
-}
 
-type HookPropsObj = {[key: string]: UseTextReturn}
+type FieldsObj = {[key: string]: UseTextReturn}
+type FieldsArr = UseTextReturn[]
 
 type FieldsArrayReturn = {
   fields: UseTextReturn[]
@@ -25,7 +13,7 @@ type FieldsArrayReturn = {
   errors: Errors[]
   hasErrors: boolean
 }
-const parseFieldsArray = (fields: UseTextReturn[]): FieldsArrayReturn => {
+const parseFieldsArray = (fields: FieldsArr): FieldsArrayReturn => {
   const values = [] as any[]
   const errors = [] as Errors[]
   let hasErrors = false
@@ -45,12 +33,12 @@ const parseFieldsArray = (fields: UseTextReturn[]): FieldsArrayReturn => {
 }
 
 type FieldsObjectReturn = {
-  fields: {[key: string]: UseTextReturn<string | number>}
+  fields: FieldsObj
   values: {[key: string]: any}
   errors: {[key: string]: Errors}
   hasErrors: boolean
 }
-const parseFieldsObject = (fields: HookPropsObj): FieldsObjectReturn => {
+const parseFieldsObject = (fields: FieldsObj): FieldsObjectReturn => {
   const values = {} as {[key: string]: any}
   const errors = {} as {[key: string]: Errors}
   let hasErrors = false
@@ -71,35 +59,40 @@ const parseFieldsObject = (fields: HookPropsObj): FieldsObjectReturn => {
   }
 }
 
-type UseFormReturn<T, U> = {
-  fields: T
-  values: T extends UseTextReturn<U>[] ?  U[] : {[key: string]: U}
-  errors: T extends UseTextReturn<U>[] ?  Errors[] : {[key: string]: Errors}
+type UseFormReturnObj = {
+  fields: FieldsObj
+  values: {[key: string]: string}
+  errors: {[key: string]: Errors}
   hasErrors: Boolean
 }
-interface UseFormFn<T, U> {
-  (formProps: T): UseFormReturn<T, U>
+type UseFormReturnArr = {
+  fields: FieldsArr
+  values: string[]
+  errors: Errors[]
+  hasErrors: Boolean
 }
-type UseFormTypes = UseFormFn<UseTextReturn<string>, string> |
-  UseFormFn<UseTextReturn<number>, number>;
-export const useForm: UseFormTypes = (formProps) =>{
+
+export function useForm(formProps: FieldsArr): UseFormReturnArr;
+export function useForm(formProps: FieldsObj): UseFormReturnObj;
+export function useForm(formProps: any):any {
   const { fields, values, errors, hasErrors } = Array.isArray(formProps.fields) ?
     parseFieldsArray(formProps.fields) :
     parseFieldsObject(formProps.fields)
   const fieldsArray = Array.isArray(fields) ? fields : Object.values(fields)
-  // let handleSubmit = () => {
-  //   throw new Error('You did not provide a `submit` function to `useForm`')
-  // }
-  // if (formProps.submit) {
-  //   handleSubmit = () => {
-
-  //   }
-  //   if (hasErrors) {
-  //     for (const field of fieldsArray) {
-  //       field.setTouched(true)
-  //     }
-  //   }
-  // }
+  let handleSubmit: (()=>never) | (()=>void) = () => {
+    throw new Error('You did not provide a `submit` function to `useForm`')
+  }
+  if (formProps.submit) {
+    handleSubmit = () => {
+      if (hasErrors) {
+        for (const field of fieldsArray) {
+          field.setTouched(true)
+        }
+      } else {
+        formProps.submit({fields, values, errors, hasErrors})
+      }
+    }
+  }
   return {
     fields,
     values,
