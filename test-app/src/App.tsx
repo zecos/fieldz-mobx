@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useText, Text } from 'fieldz'
+import { useText, Text, useForm } from 'fieldz'
 import './App.scss';
 
 function App() {
@@ -12,10 +12,20 @@ function App() {
     },
   })
   const [todos, setTodos] = useState<string[]>([])
+  const userForm = useForm({
+    fields: {
+      username: {
+      }
+    }
+  })
   return (
     <div className="App">
       <Text {...newTodo}
         onEnter={() => {
+          newTodo.setTouched(true)
+          if (newTodo.errors) {
+            return
+          }
           setTodos([
             ...todos,
             newTodo.state
