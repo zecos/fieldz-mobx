@@ -100,7 +100,7 @@ const getClassName = (props: FCProps, addendum=""): string => {
   if (!className) {
     className = 'fieldz-input' + addendum
     if (props.name) {
-      className += `${className}-${props.name.kebab+addendum}`
+      className += ` ${className}-${props.name.kebab+addendum}`
     }
   }
   return className
