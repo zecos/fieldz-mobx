@@ -2,7 +2,7 @@ import * as React from 'react'
 import { camelToTitle, titleToKebab, kebabToSnake } from './util'
 import styles from './fieldz.css'
 
-export type HookPropsObj = {
+export type UseTextPropsObj = {
   name?: string
   validate?: (input: string) => Errors
   init?: string
@@ -32,7 +32,8 @@ export type UseTextReturn = {
   [P in keyof PropsBase]-?: PropsBase[P]
 } & {errors?: Errors}
 
-export function useText(_props: HookPropsObj | string | number = {}): UseTextReturn {
+export type UseTextProps = UseTextPropsObj | string | number
+export const parseProps = (_props: UseTextProps): UseTextPropsObj => {
   if (typeof _props === "string") {
     _props = {
       init: _props
@@ -42,9 +43,17 @@ export function useText(_props: HookPropsObj | string | number = {}): UseTextRet
       init: _props + ""
     }
   }
-  const props: HookPropsObj = _props
+  return _props
+}
+export function useText(_props: UseTextProps = {}): UseTextReturn {
+  const props: UseTextProps = parseProps(_props)
   const [state, setState] = React.useState<string>(props.init || "")
-  const [errors, setErrors] = React.useState<Errors>([])
+  const [errors, setErrors] = React.useState<Errors>(() => {
+    if (props.validate) {
+      return props.validate(state)
+    }
+    return ""
+  })
   const [touched, setTouched] = React.useState<boolean>(false)
   const handleChange = (e: CE) => {
     if (props.validate) {

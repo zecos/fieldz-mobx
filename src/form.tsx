@@ -1,46 +1,40 @@
 import {
+  UseTextProps,
   UseTextReturn,
   Errors,
+  useText,
+  parseProps,
 } from './fieldz'
 
 
-type FieldsObj = {[key: string]: UseTextReturn}
-type FieldsArr = UseTextReturn[]
-
-type FieldsArrayReturn = {
-  fields: UseTextReturn[]
-  values: any[]
-  errors: Errors[]
-  hasErrors: boolean
+type UseFormReturnBase<T> = {
+  fields: {[key in keyof T]: UseTextReturn}
+  values: {[key in keyof T]: string}
+  errors: {[key in keyof T]: Errors}
+  hasErrors: Boolean
 }
-const parseFieldsArray = (fields: FieldsArr): FieldsArrayReturn => {
-  const values = [] as any[]
-  const errors = [] as Errors[]
-  let hasErrors = false
-  for (const field of fields) {
-    values.push(field.state)
-    errors.push(field.errors)
-    if (field.errors && field.errors.length) {
-      hasErrors = true
-    }
-  }
-  return {
-    fields,
-    values,
-    errors,
-    hasErrors,
-  }
+type SubmitFn<T> = (props: UseFormReturnBase<T>) => any
+type UseFormReturn<T> = UseFormReturnBase<T> & {
+  handleSubmit: (e: React.FormEvent) => any
 }
 
-type FieldsObjectReturn = {
-  fields: FieldsObj
-  values: {[key: string]: any}
-  errors: {[key: string]: Errors}
-  hasErrors: boolean
+
+type FormProps<T> = {
+  fields: {[key in keyof T]: UseTextProps}
+  submit?: SubmitFn<T>
 }
-const parseFieldsObject = (fields: FieldsObj): FieldsObjectReturn => {
-  const values = {} as {[key: string]: any}
-  const errors = {} as {[key: string]: Errors}
+
+export function useForm<T = any>(formProps: FormProps<T>): UseFormReturn<T> {
+  const fields = {} as {[key in keyof T]: UseTextReturn}
+  for (const [name, field] of Object.entries<UseTextProps>(formProps.fields)) {
+    const props = parseProps(field)
+    fields[name] = useText({
+      name,
+      ...props
+    })
+  }
+  const values = {} as {[key in keyof T]: any}
+  const errors = {} as {[key in keyof T]: Errors}
   let hasErrors = false
   for (const fieldKey in fields) {
     const field = fields[fieldKey]
@@ -51,45 +45,21 @@ const parseFieldsObject = (fields: FieldsObj): FieldsObjectReturn => {
       hasErrors = true
     }
   }
-  return {
-    fields,
-    values,
-    errors,
-    hasErrors,
-  }
-}
 
-type UseFormReturnObj = {
-  fields: FieldsObj
-  values: {[key: string]: string}
-  errors: {[key: string]: Errors}
-  hasErrors: Boolean
-}
-type UseFormReturnArr = {
-  fields: FieldsArr
-  values: string[]
-  errors: Errors[]
-  hasErrors: Boolean
-}
-
-export function useForm(formProps: FieldsArr): UseFormReturnArr;
-export function useForm(formProps: FieldsObj): UseFormReturnObj;
-export function useForm(formProps: any):any {
-  const { fields, values, errors, hasErrors } = Array.isArray(formProps.fields) ?
-    parseFieldsArray(formProps.fields) :
-    parseFieldsObject(formProps.fields)
   const fieldsArray = Array.isArray(fields) ? fields : Object.values(fields)
-  let handleSubmit: (()=>never) | (()=>void) = () => {
-    throw new Error('You did not provide a `submit` function to `useForm`')
+  let handleSubmit = (e: React.FormEvent):any => {
+    e.preventDefault()
+    console.error('You did not provide a `submit` function to `useForm`')
   }
   if (formProps.submit) {
-    handleSubmit = () => {
+    handleSubmit = (e: React.FormEvent) => {
+      e.preventDefault()
       if (hasErrors) {
         for (const field of fieldsArray) {
           field.setTouched(true)
         }
       } else {
-        formProps.submit({fields, values, errors, hasErrors})
+        formProps.submit!({fields, values, errors, hasErrors})
       }
     }
   }
@@ -98,5 +68,6 @@ export function useForm(formProps: any):any {
     values,
     errors,
     hasErrors,
+    handleSubmit,
   }
 }
