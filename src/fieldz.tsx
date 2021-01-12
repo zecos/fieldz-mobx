@@ -93,6 +93,10 @@ interface FCProps extends PropsBase {
   className?: string
   children?: React.ReactNode
   onEnter?: (e: KBE) => void
+  spellCheck?: boolean
+  autoCorrect?: "on" | "off"
+  autoCapitalize?: "on" | "off"
+  autoComplete?: "on" | "off"
 }
 
 const getClassName = (props: FCProps, addendum=""): string => {
@@ -163,6 +167,10 @@ export const Text: React.FC<FCProps> = props => {
         onChange={props.handleChange}
         onKeyDown={handleKeyDown}
         onBlur={handleBlur}
+        spellCheck={props.spellCheck}
+        autoCorrect={props.autoCorrect}
+        autoCapitalize={props.autoCapitalize}
+        autoComplete={props.autoComplete}
       />
       {props.touched && renderErrors(props.errors || [])}
     </div>
