@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import {
   UseTextProps,
   UseTextReturn,
@@ -16,6 +17,8 @@ type UseFormReturnBase<T> = {
 type SubmitFn<T> = (props: UseFormReturnBase<T>) => any
 type UseFormReturn<T> = UseFormReturnBase<T> & {
   handleSubmit: (e: React.FormEvent) => any
+  isLoading: boolean
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 
@@ -47,27 +50,33 @@ export function useForm<T = any>(formProps: FormProps<T>): UseFormReturn<T> {
   }
 
   const fieldsArray = Array.isArray(fields) ? fields : Object.values(fields)
-  let handleSubmit = (e: React.FormEvent):any => {
+  let handleSubmit = (e: React.FormEvent): any => {
     e.preventDefault()
     console.error('You did not provide a `submit` function to `useForm`')
   }
   if (formProps.submit) {
-    handleSubmit = (e: React.FormEvent) => {
+    handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault()
       if (hasErrors) {
         for (const field of fieldsArray) {
           field.setTouched(true)
         }
       } else {
-        formProps.submit!({fields, values, errors, hasErrors})
+        setIsLoading(true)
+        await formProps.submit!({fields, values, errors, hasErrors})
+        setIsLoading(false)
       }
     }
   }
+
+  const [isLoading, setIsLoading] = useState<boolean>(false)
   return {
     fields,
     values,
     errors,
     hasErrors,
     handleSubmit,
+    isLoading,
+    setIsLoading,
   }
 }
