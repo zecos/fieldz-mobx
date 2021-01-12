@@ -97,6 +97,7 @@ interface FCProps extends PropsBase {
   autoCorrect?: "on" | "off"
   autoCapitalize?: "on" | "off"
   autoComplete?: "on" | "off"
+  type?: string
 }
 
 const getClassName = (props: FCProps, addendum=""): string => {
@@ -171,6 +172,7 @@ export const Text: React.FC<FCProps> = props => {
         autoCorrect={props.autoCorrect}
         autoCapitalize={props.autoCapitalize}
         autoComplete={props.autoComplete}
+        type={props.type}
       />
       {props.touched && renderErrors(props.errors || [])}
     </div>

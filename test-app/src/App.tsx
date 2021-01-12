@@ -46,7 +46,7 @@ function App() {
         {todos.map((todo, i) => <li key={i}>{todo}</li>)}
       </ul>
       <form className="user-form">
-        <Text {...userForm.fields.username} />
+        <Text {...userForm.fields.username} spellCheck={false} />
         <Text {...userForm.fields.password} />
         <button onClick={userForm.handleSubmit}>
           Submit
