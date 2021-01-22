@@ -65,4 +65,9 @@ export class FormStore {
     }
     return hasErrors
   }
+  reset() {
+    for (const field of Object.values(this.fields)) {
+      field.reset()
+    }
+  }
 }
