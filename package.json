@@ -1,6 +1,6 @@
 {
   "name": "fieldz-mobx",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Quickly create form fields in react",
   "author": "zwhitchcox",
   "license": "MIT",
