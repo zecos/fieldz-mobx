@@ -130,7 +130,7 @@ const renderErrors = (errors: Errors) => {
   )
 }
 
-export const Field: React.FC<FCProps> = props => {
+export const FieldView: React.FC<FCProps> = props => {
   const { store } = props
   let handleKeyDown;
   if (props.onEnter) {
