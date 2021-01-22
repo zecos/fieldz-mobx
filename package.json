@@ -1,6 +1,6 @@
 {
-  "name": "fieldz",
-  "version": "0.2.14",
+  "name": "fieldz-mobx",
+  "version": "0.0.0",
   "description": "Quickly create form fields in react",
   "author": "zwhitchcox",
   "license": "MIT",
@@ -35,11 +35,12 @@
     "test": "cross-env CI=1 react-scripts-ts test --env=jsdom",
     "test:watch": "react-scripts-ts test --env=jsdom",
     "gh-pages": "cd test-app && yarn build && cd .. && gh-pages -d test-app/build",
-    "build": "rollup -c",
-    "start": "rollup -c -w",
-    "prepublish": "rollup -c"
+    "build": "cd src && rollup -c",
+    "start": "cd src && rollup -c -w",
+    "prepublish": "cd src && rollup -c"
   },
   "peerDependencies": {
+    "mobx": "^6.0.4",
     "react": "^15.0.0 || ^16.0.0 || ^17.0.0"
   },
   "devDependencies": {

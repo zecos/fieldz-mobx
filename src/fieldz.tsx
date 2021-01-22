@@ -1,20 +1,20 @@
 import * as React from 'react'
 import { camelToTitle, titleToKebab, kebabToSnake } from './util'
 import styles from './fieldz.css'
+import { observable } from 'mobx'
 
-export type UseTextPropsObj = {
+export type CreateTextPropsObj = {
   name?: string
   validate?: (input: string) => Errors
   init?: string
 }
-export type Errors = string[] | string | Error[] | void
 
+export type Errors = string[] | string | Error[] | void
 type CE = React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
 type KBE = React.KeyboardEvent
 
 type PropsBase = {
-  state: string
-  setState: React.Dispatch<React.SetStateAction<string>>
+  value: string
   handleChange: (e:CE) => void
   name?: {
     title: string
@@ -23,17 +23,15 @@ type PropsBase = {
     snake: string
   }
   errors?: Errors
-  setErrors?: React.Dispatch<React.SetStateAction<Errors>>
   touched?: boolean
-  setTouched?: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-export type UseTextReturn = {
+export type CreateTextReturn = {
   [P in keyof PropsBase]-?: PropsBase[P]
 } & {errors?: Errors}
 
-export type UseTextProps = UseTextPropsObj | string | number
-export const parseProps = (_props: UseTextProps): UseTextPropsObj => {
+export type CreateTextProps = CreateTextPropsObj | string | number
+export const parseProps = (_props: CreateTextProps): CreateTextPropsObj => {
   if (typeof _props === "string") {
     _props = {
       init: _props
@@ -45,22 +43,40 @@ export const parseProps = (_props: UseTextProps): UseTextPropsObj => {
   }
   return _props
 }
-export function useText(_props: UseTextProps = {}): UseTextReturn {
-  const props: UseTextProps = parseProps(_props)
-  const [state, setState] = React.useState<string>(props.init || "")
-  const [errors, setErrors] = React.useState<Errors>(() => {
+export function createText(_props: CreateTextProps = {}): CreateTextReturn {
+  const props: CreateTextProps = parseProps(_props)
+  const value = props.init || ""
+  const errors = (() => {
     if (props.validate) {
-      return props.validate(state)
+      return props.validate(value)
     }
-    return ""
+    return []
+  })() || ''
+  const touched = false
+  const result = observable({
+    value,
+    errors,
+    touched,
   })
-  const [touched, setTouched] = React.useState<boolean>(false)
-  const handleChange = (e: CE) => {
+
+  const setValue = (value: string) => {
     if (props.validate) {
-      setErrors(props.validate(e.target.value))
+      result.errors = props.validate(value) || ''
     }
-    setState(e.target.value)
+    result.value = result.value + value
   }
+
+  const reset = () => {
+    result.touched = true
+    result.value = props.init || ""
+    result.errors = (() => {
+      if (props.validate) {
+        return props.validate(value)
+      }
+      return []
+    })() || ""
+  }
+
   let title = ''
   let kebab = ''
   let snake = ''
@@ -72,19 +88,15 @@ export function useText(_props: UseTextProps = {}): UseTextReturn {
     snake = kebabToSnake(kebab)
   }
   return {
-    state,
-    setState,
-    handleChange,
     name: {
       camel,
       title,
       kebab,
       snake,
     },
-    errors: errors || '',
-    setErrors,
-    touched,
-    setTouched,
+    setValue,
+    reset,
+    ...result,
   }
 }
 
@@ -148,9 +160,9 @@ export const Text: React.FC<FCProps> = props => {
     }
   }
   const handleBlur = () => {
-    if (!props.touched && props.setTouched) {
-      props.setTouched(true)
-    }
+    console.log(props)
+    console.log('blurring')
+    // (props as any).x = true
   }
   return (
     <div className={`${styles.container} ${getClassName(props)}`}>
@@ -167,7 +179,7 @@ export const Text: React.FC<FCProps> = props => {
       <input
         id={(props.name) && props.name.kebab}
         className={`${styles.textInput} ${getClassName(props, "-input")}`}
-        value={props.state}
+        value={props.value}
         onChange={props.handleChange}
         onKeyDown={handleKeyDown}
         onBlur={handleBlur}

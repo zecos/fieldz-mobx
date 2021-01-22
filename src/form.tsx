@@ -1,21 +1,21 @@
 import { useState } from 'react'
 import {
-  UseTextProps,
-  UseTextReturn,
+  CreateTextProps,
+  CreateTextReturn,
   Errors,
-  useText,
+  createText,
   parseProps,
 } from './fieldz'
 
 
-type UseFormReturnBase<T> = {
-  fields: {[key in keyof T]: UseTextReturn}
+type CreateFormReturnBase<T> = {
+  fields: {[key in keyof T]: CreateTextReturn}
   values: {[key in keyof T]: string}
   errors: {[key in keyof T]: Errors}
   hasErrors: Boolean
 }
-type SubmitFn<T> = (props: UseFormReturnBase<T>) => any
-type UseFormReturn<T> = UseFormReturnBase<T> & {
+type SubmitFn<T> = (props: CreateFormReturnBase<T>) => any
+type CreateFormReturn<T> = CreateFormReturnBase<T> & {
   handleSubmit: (e: React.FormEvent) => any
   isLoading: boolean
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>
@@ -23,15 +23,15 @@ type UseFormReturn<T> = UseFormReturnBase<T> & {
 
 
 type FormProps<T> = {
-  fields: {[key in keyof T]: UseTextProps}
+  fields: {[key in keyof T]: CreateTextProps}
   submit?: SubmitFn<T>
 }
 
-export function useForm<T = any>(formProps: FormProps<T>): UseFormReturn<T> {
-  const fields = {} as {[key in keyof T]: UseTextReturn}
-  for (const [name, field] of Object.entries<UseTextProps>(formProps.fields)) {
+export function createForm<T = any>(formProps: FormProps<T>): CreateFormReturn<T> {
+  const fields = {} as {[key in keyof T]: CreateTextReturn}
+  for (const [name, field] of Object.entries<CreateTextProps>(formProps.fields)) {
     const props = parseProps(field)
-    fields[name] = useText({
+    fields[name] = createText({
       name,
       ...props
     })
@@ -42,7 +42,7 @@ export function useForm<T = any>(formProps: FormProps<T>): UseFormReturn<T> {
   for (const fieldKey in fields) {
     const field = fields[fieldKey]
     fields[fieldKey] = field
-    values[fieldKey] = field.state
+    values[fieldKey] = field.value
     errors[fieldKey] = field.errors
     if (field.errors && field.errors.length) {
       hasErrors = true

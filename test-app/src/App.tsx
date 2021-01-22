@@ -1,46 +1,60 @@
 import React, { useState } from 'react';
-import { useText, Text, useForm } from 'fieldz'
+import { observer } from 'mobx-react-lite'
+import { createText, Text, createForm } from 'fieldz-mobx'
 import './App.scss';
+import { observable } from 'mobx';
+import { computed } from 'mobx';
+import { HighlightSpanKind } from 'typescript';
+import { extendObservable } from 'mobx';
+
+const newTodo = createText({
+  name: 'newTodo',
+  validate: val => {
+    if (val.length < 3) {
+      return "Must be at least 3 characters long."
+    }
+  },
+})
+
 
 function App() {
-  const newTodo = useText({
-    name: 'newTodo',
-    validate: val => {
-      if (val.length < 3) {
-        return "Must be at least 3 characters long."
-      }
-    },
-  })
-  const [todos, setTodos] = useState<string[]>([])
-  const userForm = useForm({
-    fields: {
-      username: {
-        validate: val => {
-          if (val.length < 3) {
-            return "Must be at least 3 characters long."
-          }
-        }
-      },
-      password: "",
-    },
-    submit: ({values}) => {
-      console.log(values)
-    }
-  })
+  // const [todos, setTodos] = useState<string[]>([])
+  // const userForm = createForm({
+  //   fields: {
+  //     username: {
+  //       validate: val => {
+  //         if (val.length < 3) {
+  //           return "Must be at least 3 characters long."
+  //         }
+  //       }
+  //     },
+  //     password: "",
+  //   },
+  //   submit: ({values}) => {
+  //     console.log(values)
+  //   }
+  // })
+  const [state, setState] = useState(false)
+  const refresh = () => setState(!state)
   return (
     <div className="App">
-      <Text {...newTodo}
+      <Text {...newTodo} />
+      <button onClick={refresh}>
+        refresh
+      </button>
+
+      {/* <Text {...newTodo}
         onEnter={() => {
           if (newTodo.errors) {
-            newTodo.setTouched(true)
+            newTodo.touched = true
             return
           }
           setTodos([
             ...todos,
-            newTodo.state
+            newTodo.value
           ])
-          newTodo.setTouched(false)
-          newTodo.setState('')
+          newTodo.touched = false
+          newTodo.value = ""
         }}/>
       <ul>
         {todos.map((todo, i) => <li key={i}>{todo}</li>)}
@@ -51,9 +65,9 @@ function App() {
         <button onClick={userForm.handleSubmit}>
           Submit
         </button>
-      </form>
+      </form> */}
     </div>
   );
 }
 
-export default App;
+export default observer(App);
