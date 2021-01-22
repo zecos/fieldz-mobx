@@ -4978,6 +4978,11 @@ fb-watchman@^2.0.0:
   dependencies:
     bser "2.1.1"
 
+fieldz-mobx@^0.0.0:
+  version "0.0.0"
+  resolved "https://registry.yarnpkg.com/fieldz-mobx/-/fieldz-mobx-0.0.0.tgz#999ceb3c1451171247447909a31b086d1a95da70"
+  integrity sha512-H7/mggqi8SF+BP6F5oh5q+CdRATVWG1EGHFqZhWtAb0P5vV+G/mRGL80HqGvO29fpX0fY1Y6VJP8iRASsUp8lg==
+
 figgy-pudding@^3.5.1:
   version "3.5.2"
   resolved "https://registry.yarnpkg.com/figgy-pudding/-/figgy-pudding-3.5.2.tgz#b4eee8148abb01dcf1d1ac34367d59e12fa61d6e"

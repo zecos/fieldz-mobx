@@ -10,6 +10,7 @@
     "@types/node": "^12.0.0",
     "@types/react": "^16.9.53",
     "@types/react-dom": "^16.9.8",
+    "fieldz-mobx": "^0.0.0",
     "mobx": "^6.0.4",
     "mobx-react-lite": "^3.1.6",
     "node-sass": "4",

@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { camelToTitle, titleToKebab, kebabToSnake } from './util'
 import styles from './fieldz.css'
-import { extendObservable, computed } from 'mobx'
+import { makeAutoObservable, computed } from 'mobx'
 
 export type FieldStorePropsObj = {
   name?: string
@@ -39,7 +39,7 @@ export const parseProps = (_props: FieldStoreProps): FieldStorePropsObj => {
   }
   return _props
 }
-export class FieldStore implements IFieldStore {
+export class FieldStore {
   private _name = ""
   public validate = (val: string) => ""
   public init = ""
@@ -53,42 +53,30 @@ export class FieldStore implements IFieldStore {
   get value() {
     return this._value
   }
-  public name = {
-    camel: "",
-    title: "",
-    kebab: "",
-    snake: "",
+  @computed get name() {
+    const camel = this._name
+    const title = camelToTitle(camel)
+    const kebab = titleToKebab(title)
+    const snake = kebabToSnake(kebab)
+    return {
+      camel,
+      kebab,
+      title,
+      snake,
+    }
   }
-  constructor(_props: FieldStoreProps) {
-    const props = parseProps(_props)
-    extendObservable(this, {
-      _name: props.name,
-      validate: props.validate,
-      name: computed(() => {
-        const camel = this._name
-        const title = camelToTitle(camel)
-        const kebab = titleToKebab(title)
-        const snake = kebabToSnake(kebab)
-        return {
-          camel,
-          kebab,
-          title,
-          snake,
-        }
-      }),
-      _value: props.init || "",
-      setValue: (value: string) => {
-        this.errors = this.validate(value)
-        this.value = value
-      },
-      reset: () => {
-        this.touched = true
-        this.value = props.init || ""
-      }
-    })
+  public reset() {
+    this.touched = true
+    this.value = this.init || ""
+  }
+  constructor(props: any) {
+    makeAutoObservable(this)
+    this.init = props.init || this.init
+    this._name = props.name
+    this.validate = props.validate
+    this._value = props.init || ""
   }
 }
-
 
 interface FCProps {
   className?: string
