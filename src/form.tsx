@@ -36,7 +36,7 @@ export class FormStore {
   public fields: {[key: string]: FieldStore} = {}
   constructor(formProps: PropsObj) {
     makeAutoObservable(this)
-    extendObservable(this, propsToFields(formProps))
+    this.fields = propsToFields(formProps)
   }
   @computed values(format = "camel") {
     const result = {} as {[key: string]: string}
