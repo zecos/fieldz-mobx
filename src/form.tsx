@@ -1,82 +1,64 @@
-import { useState } from 'react'
 import {
-  CreateTextProps,
-  CreateTextReturn,
-  Errors,
-  createText,
+  FieldStoreProps,
+  FieldStore,
   parseProps,
 } from './fieldz'
+import { extendObservable, computed } from 'mobx'
+
+type SubmitFn = (props: typeof FormStore) => any
 
 
-type CreateFormReturnBase<T> = {
-  fields: {[key in keyof T]: CreateTextReturn}
-  values: {[key in keyof T]: string}
-  errors: {[key in keyof T]: Errors}
-  hasErrors: Boolean
-}
-type SubmitFn<T> = (props: CreateFormReturnBase<T>) => any
-type CreateFormReturn<T> = CreateFormReturnBase<T> & {
-  handleSubmit: (e: React.FormEvent) => any
-  isLoading: boolean
-  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>
+type FormProps = {
+  fields: {[key: string]: FieldStoreProps}
+  submit?: SubmitFn
 }
 
-
-type FormProps<T> = {
-  fields: {[key in keyof T]: CreateTextProps}
-  submit?: SubmitFn<T>
-}
-
-export function createForm<T = any>(formProps: FormProps<T>): CreateFormReturn<T> {
-  const fields = {} as {[key in keyof T]: CreateTextReturn}
-  for (const [name, field] of Object.entries<CreateTextProps>(formProps.fields)) {
-    const props = parseProps(field)
-    fields[name] = createText({
-      name,
-      ...props
-    })
-  }
-  const values = {} as {[key in keyof T]: any}
-  const errors = {} as {[key in keyof T]: Errors}
-  let hasErrors = false
-  for (const fieldKey in fields) {
-    const field = fields[fieldKey]
-    fields[fieldKey] = field
-    values[fieldKey] = field.value
-    errors[fieldKey] = field.errors
-    if (field.errors && field.errors.length) {
-      hasErrors = true
+export class FormStore {
+  public fields: {[key: string]: FieldStore} = {}
+  public validate() {
+    if (this.hasErrors) {
+      for (const field of Object.values(this.fields)) {
+        field.touched = true
+      }
+      return false
     }
+    return true
   }
-
-  const fieldsArray = Array.isArray(fields) ? fields : Object.values(fields)
-  let handleSubmit = (e: React.FormEvent): any => {
-    e.preventDefault()
-    console.error('You did not provide a `submit` function to `useForm`')
+  constructor(formProps: FormProps) {
+    const fields: {[key: string]: FieldStore} = {}
+    for (const [name, field] of Object.entries<FieldStoreProps>(formProps.fields)) {
+      const props = parseProps(field)
+      fields[name] = new FieldStore({
+        name,
+        ...props
+      })
+    }
+    extendObservable(this, fields)
   }
-  if (formProps.submit) {
-    handleSubmit = async (e: React.FormEvent) => {
-      e.preventDefault()
-      if (hasErrors) {
-        for (const field of fieldsArray) {
-          field.setTouched(true)
-        }
-      } else {
-        setIsLoading(true)
-        await formProps.submit!({fields, values, errors, hasErrors})
-        setIsLoading(false)
+  @computed values(format = "camel") {
+    const result = {} as {[key: string]: string}
+    for (const fieldKey in this.fields) {
+      const field = this.fields[fieldKey]
+      result[field.name[format]] = field.value
+    }
+    return result
+  }
+  @computed errors(format = "camel") {
+    const result = {} as {[key: string]: string}
+    for (const fieldKey in this.fields) {
+      const field = this.fields[fieldKey]
+      result[field.name[format]] = field.value
+    }
+    return result
+  }
+  @computed get hasErrors() {
+    let hasErrors = false
+    for (const fieldKey in this.fields) {
+      const field = this.fields[fieldKey]
+      if (field.errors && field.errors.length) {
+        hasErrors = true
       }
     }
-  }
-
-  const [isLoading, setIsLoading] = useState<boolean>(false)
-  return {
-    fields,
-    values,
-    errors,
-    hasErrors,
-    handleSubmit,
-    isLoading,
-    setIsLoading,
+    return hasErrors
   }
 }

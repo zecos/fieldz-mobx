@@ -1,9 +1,9 @@
 import * as React from 'react'
 import { camelToTitle, titleToKebab, kebabToSnake } from './util'
 import styles from './fieldz.css'
-import { observable } from 'mobx'
+import { extendObservable, computed } from 'mobx'
 
-export type CreateTextPropsObj = {
+export type FieldStorePropsObj = {
   name?: string
   validate?: (input: string) => Errors
   init?: string
@@ -13,25 +13,21 @@ export type Errors = string[] | string | Error[] | void
 type CE = React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
 type KBE = React.KeyboardEvent
 
-type PropsBase = {
-  value: string
-  handleChange: (e:CE) => void
-  name?: {
+interface IFieldStore {
+  name: {
     title: string
     kebab: string
     camel: string
     snake: string
   }
-  errors?: Errors
-  touched?: boolean
+  value: string
+  errors: Errors
+  touched: boolean
 }
 
-export type CreateTextReturn = {
-  [P in keyof PropsBase]-?: PropsBase[P]
-} & {errors?: Errors}
 
-export type CreateTextProps = CreateTextPropsObj | string | number
-export const parseProps = (_props: CreateTextProps): CreateTextPropsObj => {
+export type FieldStoreProps = FieldStorePropsObj | string | number
+export const parseProps = (_props: FieldStoreProps): FieldStorePropsObj => {
   if (typeof _props === "string") {
     _props = {
       init: _props
@@ -43,65 +39,58 @@ export const parseProps = (_props: CreateTextProps): CreateTextPropsObj => {
   }
   return _props
 }
-export function createText(_props: CreateTextProps = {}): CreateTextReturn {
-  const props: CreateTextProps = parseProps(_props)
-  const value = props.init || ""
-  const errors = (() => {
-    if (props.validate) {
-      return props.validate(value)
-    }
-    return []
-  })() || ''
-  const touched = false
-  const result = observable({
-    value,
-    errors,
-    touched,
-  })
-
-  const setValue = (value: string) => {
-    if (props.validate) {
-      result.errors = props.validate(value) || ''
-    }
-    result.value = result.value + value
+export class FieldStore implements IFieldStore {
+  private _name = ""
+  public validate = (val: string) => ""
+  public init = ""
+  public errors = ""
+  private _value = ""
+  public touched = false
+  set value(value: string) {
+    this._value = value
+    this.errors = this.validate(this._value)
   }
-
-  const reset = () => {
-    result.touched = true
-    result.value = props.init || ""
-    result.errors = (() => {
-      if (props.validate) {
-        return props.validate(value)
+  get value() {
+    return this._value
+  }
+  public name = {
+    camel: "",
+    title: "",
+    kebab: "",
+    snake: "",
+  }
+  constructor(_props: FieldStoreProps) {
+    const props = parseProps(_props)
+    extendObservable(this, {
+      _name: props.name,
+      validate: props.validate,
+      name: computed(() => {
+        const camel = this._name
+        const title = camelToTitle(camel)
+        const kebab = titleToKebab(title)
+        const snake = kebabToSnake(kebab)
+        return {
+          camel,
+          kebab,
+          title,
+          snake,
+        }
+      }),
+      _value: props.init || "",
+      setValue: (value: string) => {
+        this.errors = this.validate(value)
+        this.value = value
+      },
+      reset: () => {
+        this.touched = true
+        this.value = props.init || ""
       }
-      return []
-    })() || ""
-  }
-
-  let title = ''
-  let kebab = ''
-  let snake = ''
-  let camel = ''
-  if (props.name) {
-    camel = props.name
-    title = camelToTitle(camel)
-    kebab = titleToKebab(title)
-    snake = kebabToSnake(kebab)
-  }
-  return {
-    name: {
-      camel,
-      title,
-      kebab,
-      snake,
-    },
-    setValue,
-    reset,
-    ...result,
+    })
   }
 }
 
 
-interface FCProps extends PropsBase {
+interface FCProps {
   className?: string
   children?: React.ReactNode
   onEnter?: (e: KBE) => void
@@ -109,15 +98,18 @@ interface FCProps extends PropsBase {
   autoCorrect?: "on" | "off"
   autoCapitalize?: "on" | "off"
   autoComplete?: "on" | "off"
+  handleChange?: (e: CE) => any
+  handleKeyDown?: (e: CE) => any
   type?: string
+  store: IFieldStore
 }
 
 const getClassName = (props: FCProps, addendum=""): string => {
   let className: string = props.className || ''
   if (!className) {
     className = 'fieldz-input' + addendum
-    if (props.name) {
-      className += ` ${className}-${props.name.kebab+addendum}`
+    if (props.store.name) {
+      className += ` ${className}-${props.store.name.kebab+addendum}`
     }
   }
   return className
@@ -150,7 +142,8 @@ const renderErrors = (errors: Errors) => {
   )
 }
 
-export const Text: React.FC<FCProps> = props => {
+export const Field: React.FC<FCProps> = props => {
+  const { store } = props
   let handleKeyDown;
   if (props.onEnter) {
     handleKeyDown = (e: KBE) => {
@@ -159,29 +152,30 @@ export const Text: React.FC<FCProps> = props => {
       }
     }
   }
+  const handleChange = (e: CE) => {
+    store.value = e.target.value
+  }
   const handleBlur = () => {
-    console.log(props)
-    console.log('blurring')
-    // (props as any).x = true
+    store.touched = true
   }
   return (
     <div className={`${styles.container} ${getClassName(props)}`}>
-      {!props.name ? "" : (
+      {!props.store.name ? "" : (
         <>
           <label
-            htmlFor={props.name.kebab}
+            htmlFor={props.store.name.kebab}
             className={`${styles.textLabel} ${getClassName(props, "-label")}`}>
-            {props.name.title}
+            {props.store.name.title}
           </label>
           <br />
         </>
       )}
       <input
-        id={(props.name) && props.name.kebab}
+        id={(props.store.name) && props.store.name.kebab}
         className={`${styles.textInput} ${getClassName(props, "-input")}`}
-        value={props.value}
-        onChange={props.handleChange}
-        onKeyDown={handleKeyDown}
+        value={props.store.value}
+        onChange={props.handleChange || handleChange}
+        onKeyDown={props.handleKeyDown || handleKeyDown}
         onBlur={handleBlur}
         spellCheck={props.spellCheck}
         autoCorrect={props.autoCorrect}
@@ -189,7 +183,7 @@ export const Text: React.FC<FCProps> = props => {
         autoComplete={props.autoComplete}
         type={props.type}
       />
-      {props.touched && renderErrors(props.errors || [])}
+      {props.store.touched && renderErrors(props.store.errors || [])}
     </div>
   )
 }

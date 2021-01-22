@@ -1,15 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite'
-import { createText, Text, createForm } from 'fieldz-mobx'
+import { Field, FieldStore } from 'fieldz-mobx'
 import './App.scss';
-import { observable } from 'mobx';
-import { computed } from 'mobx';
-import { HighlightSpanKind } from 'typescript';
-import { extendObservable } from 'mobx';
 
-const newTodo = createText({
+const newTodoStore = new FieldStore({
   name: 'newTodo',
-  validate: val => {
+  validate: (val: any) => {
     if (val.length < 3) {
       return "Must be at least 3 characters long."
     }
@@ -38,7 +34,7 @@ function App() {
   const refresh = () => setState(!state)
   return (
     <div className="App">
-      <Text {...newTodo} />
+      <Field store={newTodoStore} />
       <button onClick={refresh}>
         refresh
       </button>

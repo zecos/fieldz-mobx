@@ -14,7 +14,7 @@
   "homepage": "https://github.com/zecos/fieldz",
   "main": "dist/index.js",
   "module": "dist/index.es.js",
-  "types": "dist/index.d.ts",
+  "types": "dist/src/index.d.ts",
   "jsnext:main": "dist/index.es.js",
   "keywords": [
     "zecos",
@@ -34,10 +34,10 @@
   "scripts": {
     "test": "cross-env CI=1 react-scripts-ts test --env=jsdom",
     "test:watch": "react-scripts-ts test --env=jsdom",
-    "gh-pages": "cd test-app && yarn build && cd .. && gh-pages -d test-app/build",
-    "build": "cd src && rollup -c",
-    "start": "cd src && rollup -c -w",
-    "prepublish": "cd src && rollup -c"
+    "demo": "cd test-app && yarn build && cd .. && gh-pages -d test-app/build",
+    "build": "rollup -c",
+    "start": "rollup -c -w",
+    "prepublish": "rollup -c"
   },
   "peerDependencies": {
     "mobx": "^6.0.4",

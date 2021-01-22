@@ -7,25 +7,25 @@ import resolve from 'rollup-plugin-node-resolve'
 import url from 'rollup-plugin-url'
 import svgr from '@svgr/rollup'
 
-import pkg from '../package.json'
+import pkg from './package.json'
 
 export default {
-  input: 'index.ts',
+  input: 'src/index.ts',
   output: [
     {
-      file: "../" + pkg.main,
+      file: pkg.main,
       format: 'cjs',
       exports: 'named',
       sourcemap: true
     },
     {
-      file: "../" + pkg.module,
+      file: pkg.module,
       format: 'es',
       exports: 'named',
       sourcemap: true
     }
   ],
-  external: ["react", "mobx-react-lite", "mobx"],
+  external: ["react", "mobx"],
   plugins: [
     external(),
     postcss({
