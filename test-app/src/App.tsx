@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite'
-import { FieldView, FieldStore } from 'fieldz-mobx'
+import { FieldView, FieldStore, FormStore } from 'fieldz-mobx'
 import './App.scss';
 import { extendObservable } from 'mobx';
 import { computed, makeObservable } from 'mobx';
@@ -18,26 +18,23 @@ const newTodoStore = new FieldStore({
 })
 newTodoStore.value = "hello"
 
+const userFormStore = new FormStore({
+  fields: {
+    username: {
+      validate: (val:any) => {
+        if (val.length < 3) {
+          return "Must be at least 3 characters long."
+        }
+      }
+    },
+    password: "",
+  },
+})
+
 
 function App() {
-  // const [todos, setTodos] = useState<string[]>([])
-  // const userForm = createForm({
-  //   fields: {
-  //     username: {
-  //       validate: val => {
-  //         if (val.length < 3) {
-  //           return "Must be at least 3 characters long."
-  //         }
-  //       }
-  //     },
-  //     password: "",
-  //   },
-  //   submit: ({values}) => {
-  //     console.log(values)
-  //   }
-  // })
-  const [state, setState] = useState(false)
-  const refresh = () => setState(!state)
+  const [todos, setTodos] = useState<string[]>([])
+  const submit = () => {}
   return (
     <div className="App">
       <FieldView store={newTodoStore} />
@@ -45,33 +42,29 @@ function App() {
       <button onClick={() => newTodoStore.value = "second"}>
         Change
       </button>
-      <button onClick={refresh}>
-        refresh
-      </button>
 
-      {/* <Text {...newTodo}
+      <FieldView store={newTodoStore}
         onEnter={() => {
-          if (newTodo.errors) {
-            newTodo.touched = true
+          if (newTodoStore.errors) {
+            newTodoStore.touched = true
             return
           }
           setTodos([
             ...todos,
-            newTodo.value
+            newTodoStore.value
           ])
-          newTodo.touched = false
-          newTodo.value = ""
+          newTodoStore.reset()
         }}/>
       <ul>
         {todos.map((todo, i) => <li key={i}>{todo}</li>)}
       </ul>
       <form className="user-form">
-        <Text {...userForm.fields.username} spellCheck={false} />
-        <Text {...userForm.fields.password} />
-        <button onClick={userForm.handleSubmit}>
+        <FieldView store={userFormStore.fields.username} spellCheck={false} />
+        <FieldView store={userFormStore.fields.password} />
+        <button onClick={submit}>
           Submit
         </button>
-      </form> */}
+      </form>
     </div>
   );
 }

@@ -3,7 +3,11 @@ import {
   FieldStore,
   parseProps,
 } from './fieldz'
-import { extendObservable, computed } from 'mobx'
+import {
+  extendObservable,
+  computed,
+  makeAutoObservable,
+} from 'mobx'
 
 type SubmitFn = (props: typeof FormStore) => any
 
@@ -13,27 +17,26 @@ type FormProps = {
   submit?: SubmitFn
 }
 
+type PropsObj = {[key: string]: FieldStoreProps}
+type FieldStoreObj = {[key: string]: FieldStore}
+const propsToFields = (props: PropsObj)  => {
+  const fields: FieldStoreObj = {}
+  const entries = Object.entries<FieldStoreProps>(props)
+  for (const [name, field] of entries) {
+    const props = parseProps(field)
+    fields[name] = new FieldStore({
+      name,
+      ...props
+    })
+  }
+  return fields
+}
+
 export class FormStore {
   public fields: {[key: string]: FieldStore} = {}
-  public validate() {
-    if (this.hasErrors) {
-      for (const field of Object.values(this.fields)) {
-        field.touched = true
-      }
-      return false
-    }
-    return true
-  }
-  constructor(formProps: FormProps) {
-    const fields: {[key: string]: FieldStore} = {}
-    for (const [name, field] of Object.entries<FieldStoreProps>(formProps.fields)) {
-      const props = parseProps(field)
-      fields[name] = new FieldStore({
-        name,
-        ...props
-      })
-    }
-    extendObservable(this, fields)
+  constructor(formProps: PropsObj) {
+    makeAutoObservable(this)
+    extendObservable(this, propsToFields(formProps))
   }
   @computed values(format = "camel") {
     const result = {} as {[key: string]: string}
@@ -57,6 +60,7 @@ export class FormStore {
       const field = this.fields[fieldKey]
       if (field.errors && field.errors.length) {
         hasErrors = true
+        break
       }
     }
     return hasErrors
