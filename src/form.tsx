@@ -41,7 +41,7 @@ const getByFormat = (format: string, prop: string, fields: FieldStoreObj) => {
   return result
 }
 
-interface IFormStore {
+export interface IFormStore {
   loading: boolean
   fields: {[key: string]: FieldStore}
   hasErrors: boolean
