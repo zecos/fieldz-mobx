@@ -19,28 +19,33 @@ const newTodoStore = new FieldStore({
 newTodoStore.value = "hello"
 
 const userFormStore = new FormStore({
-  fields: {
-    username: {
-      validate: (val:any) => {
-        if (val.length < 3) {
-          return "Must be at least 3 characters long."
-        }
+  username: {
+    validate: (val:any) => {
+      if (val.length < 3) {
+        return "Must be at least 3 characters long."
       }
-    },
-    password: "",
+    }
   },
+  password: "",
 })
 
 
 function App() {
+  const _userFormStore:any = userFormStore
   const [todos, setTodos] = useState<string[]>([])
   const submit = () => {}
   return (
     <div className="App">
-      <FieldView store={newTodoStore} />
+      {/* <FieldView store={newTodoStore} />
       {newTodoStore.value}
       <button onClick={() => newTodoStore.value = "second"}>
         Change
+      </button>
+      <button onClick={newTodoStore.reset}>
+        Reset Todo
+      </button>
+      <button onClick={userFormStore.reset}>
+        Reset User
       </button>
 
       <FieldView store={newTodoStore}
@@ -57,10 +62,10 @@ function App() {
         }}/>
       <ul>
         {todos.map((todo, i) => <li key={i}>{todo}</li>)}
-      </ul>
+      </ul> */}
       <form className="user-form">
-        <FieldView store={userFormStore.fields.username} spellCheck={false} />
-        <FieldView store={userFormStore.fields.password} />
+        <FieldView store={_userFormStore.fields.username} spellCheck={false} />
+        <FieldView store={_userFormStore.fields.password} />
         <button onClick={submit}>
           Submit
         </button>
