@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite'
-import { Field, FieldStore } from 'fieldz-mobx'
+import { FieldView, FieldStore } from 'fieldz-mobx'
 import './App.scss';
 import { extendObservable } from 'mobx';
 import { computed, makeObservable } from 'mobx';
@@ -40,7 +40,7 @@ function App() {
   const refresh = () => setState(!state)
   return (
     <div className="App">
-      <Field store={newTodoStore} />
+      <FieldView store={newTodoStore} />
       {newTodoStore.value}
       <button onClick={() => newTodoStore.value = "second"}>
         Change
