@@ -25,7 +25,7 @@ export default {
       sourcemap: true
     }
   ],
-  external: ["react", "mobx"],
+  external: ["react", "mobx", "mobx-react-lite"],
   plugins: [
     external(),
     postcss({

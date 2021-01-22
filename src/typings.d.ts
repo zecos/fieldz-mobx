@@ -4,3 +4,4 @@ declare module '*.css' {
 }
 
 declare module "mobx";
+declare module "mobx-react-lite"

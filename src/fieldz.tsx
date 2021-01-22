@@ -1,7 +1,8 @@
 import * as React from 'react'
 import { camelToTitle, titleToKebab, kebabToSnake } from './util'
 import styles from './fieldz.css'
-import { makeAutoObservable, computed } from 'mobx'
+import { makeAutoObservable, computed, extendObservable } from 'mobx'
+import { observer } from 'mobx-react-lite'
 
 export type FieldStorePropsObj = {
   name?: string
@@ -46,35 +47,44 @@ export class FieldStore {
   public errors = ""
   private _value = ""
   public touched = false
-  set value(value: string) {
-    this._value = value
-    this.errors = this.validate(this._value)
+  public name = {
+    camel: "",
+    title: "",
+    kebab: "",
+    snake: "",
   }
-  get value() {
-    return this._value
-  }
-  @computed get name() {
-    const camel = this._name
-    const title = camelToTitle(camel)
-    const kebab = titleToKebab(title)
-    const snake = kebabToSnake(kebab)
-    return {
-      camel,
-      kebab,
-      title,
-      snake,
-    }
-  }
-  public reset() {
+  public value = ""
+  public reset = () => {
     this.touched = true
     this.value = this.init || ""
   }
   constructor(props: any) {
     makeAutoObservable(this)
     this.init = props.init || this.init
-    this._name = props.name
-    this.validate = props.validate
+    this._name = props.name || ""
+    this.validate = props.validate || (() => "")
     this._value = props.init || ""
+    extendObservable(this, {
+      get name() {
+        const camel = this._name
+        const title = camelToTitle(camel)
+        const kebab = titleToKebab(title)
+        const snake = kebabToSnake(kebab)
+        return {
+          camel,
+          kebab,
+          title,
+          snake,
+        }
+      },
+      set value(value: string) {
+        this._value = value
+        this.errors = this.validate(this._value)
+      },
+      get value() {
+        return this._value
+      }
+    })
   }
 }
 
@@ -130,7 +140,7 @@ const renderErrors = (errors: Errors) => {
   )
 }
 
-export const FieldView: React.FC<FCProps> = props => {
+export const FieldView: React.FC<FCProps> = observer(props => {
   const { store } = props
   let handleKeyDown;
   if (props.onEnter) {
@@ -174,4 +184,4 @@ export const FieldView: React.FC<FCProps> = props => {
       {props.store.touched && renderErrors(props.store.errors || [])}
     </div>
   )
-}
+})
