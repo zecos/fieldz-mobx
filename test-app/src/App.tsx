@@ -33,9 +33,17 @@ const userFormStore = new FormStore({
 function App() {
   const _userFormStore:any = userFormStore
   const [todos, setTodos] = useState<string[]>([])
+  console.log(userFormStore.values.camel)
   const submit = () => {}
   return (
     <div className="App">
+      <button onClick={() => {
+        userFormStore.values.kebab = {
+          username: "zane"
+        }
+      }}>
+        Click Me
+      </button>
       {/* <FieldView store={newTodoStore} />
       {newTodoStore.value}
       <button onClick={() => newTodoStore.value = "second"}>
