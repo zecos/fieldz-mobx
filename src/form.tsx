@@ -9,6 +9,11 @@ import {
   computed,
   makeAutoObservable,
 } from 'mobx'
+import {
+  camelToSnake,
+  camelToTitle,
+  camelToKebab,
+} from './util'
 
 type SubmitFn = (props: typeof FormStore) => any
 
@@ -84,14 +89,72 @@ export class FormStore implements IFormStore {
         get camel() {
           return getByFormat("camel", "value", that.fields)
         },
+        set camel(obj: {[key:string]: string}) {
+          for (const key in obj) {
+            if (!(key in that.fields)) {
+              throw new Error(`Could not find field ${key}`)
+            }
+          }
+          for (const key in obj) {
+            that.fields[key].value = obj[key]
+          }
+        },
         get snake() {
           return getByFormat("snake", "value", that.fields)
+        },
+        set snake(_obj: {[key:string]: string}) {
+          const obj = Object.assign({}, _obj)
+          for (const key in obj) {
+            const temp = obj[key]
+            delete obj[key]
+            obj[camelToSnake(key)] = temp
+          }
+          for (const key in obj) {
+            if (!(key in that.fields)) {
+              throw new Error(`Could not find field ${key}`)
+            }
+          }
+          for (const key in obj) {
+            that.fields[key].value = obj[key]
+          }
         },
         get kebab() {
           return getByFormat("kebab", "value", that.fields)
         },
+        set kebab(_obj: {[key:string]: string}) {
+          const obj = Object.assign({}, _obj)
+          for (const key in obj) {
+            const temp = obj[key]
+            delete obj[key]
+            obj[camelToKebab(key)] = temp
+          }
+          for (const key in obj) {
+            if (!(key in that.fields)) {
+              throw new Error(`Could not find field ${key}`)
+            }
+          }
+          for (const key in obj) {
+            that.fields[key].value = obj[key]
+          }
+        },
         get title() {
           return getByFormat("title", "value", that.fields)
+        },
+        set title(_obj: {[key:string]: string}) {
+          const obj = Object.assign({}, _obj)
+          for (const key in obj) {
+            const temp = obj[key]
+            delete obj[key]
+            obj[camelToTitle(key)] = temp
+          }
+          for (const key in obj) {
+            if (!(key in that.fields)) {
+              throw new Error(`Could not find field ${key}`)
+            }
+          }
+          for (const key in obj) {
+            that.fields[key].value = obj[key]
+          }
         },
       },
       errors: {
