@@ -23,16 +23,23 @@ type FormProps = {
   submit?: SubmitFn
 }
 
-type ActionsObj = {
-  [key: string]: (...args: any[]) => any
-}
+type Action  = ((...args: any) => any)
+type PropOrAction = FieldStoreProps | Action
+type PropsOrActionsObj = {[key: string]: PropOrAction}
+type ActionsObj = {[key: string]: Action}
 
 type PropsObj = {[key: string]: FieldStoreProps}
 type FieldStoreObj = {[key: string]: FieldStore}
-const propsToFields = (props: PropsObj): FieldStoreObj => {
+const propsToFieldsOrActions = (props: PropsOrActionsObj): FieldStoreObj => {
   const fields: FieldStoreObj = {}
-  const entries = Object.entries<FieldStoreProps>(props)
+  const actions: ActionsObj = {}
+  const entries = Object.entries<PropOrAction>(props)
   for (const [name, field] of entries) {
+    if (typeof field === "function") {
+      actions[name] = field
+      continue
+    }
+
     const props = parseProps(field)
     fields[name] = new FieldStore({
       name,
@@ -53,6 +60,7 @@ const getByFormat = (format: string, prop: string, fields: FieldStoreObj) => {
 export interface IFormStore {
   loading: boolean
   fields: {[key: string]: FieldStore}
+  actions: {[key: string]: Action}
   hasErrors: boolean
   values: {
     camel: { [key: string]: string }
@@ -70,7 +78,8 @@ export interface IFormStore {
 
 
 export class FormStore implements IFormStore {
-  public fields: {[key: string]: FieldStore} = {}
+  public fields: FieldStoreObj = {}
+  public actions: ActionsObj = {}
   public loading = false
   public values = (() => {
     const that = this
@@ -178,8 +187,7 @@ export class FormStore implements IFormStore {
   }
   constructor(formProps: PropsObj, actions: ActionsObj = {}) {
     makeAutoObservable(this)
-    this.fields = propsToFields(formProps)
-    extendObservable(this, actions)
+    extendObservable(this, propsToFieldsOrActions(formProps))
   }
 
   public reset = () => {
