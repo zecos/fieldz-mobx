@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { camelToTitle, titleToKebab, kebabToSnake } from './util'
+import { camelToTitle, titleToKebab, kebabToSnake, camelToKebab, camelToSnake } from './util'
 import styles from './fieldz.css'
 import { makeAutoObservable, computed, extendObservable } from 'mobx'
 import { observer } from 'mobx-react-lite'
@@ -47,44 +47,40 @@ export class FieldStore {
   public errors = ""
   private _value = ""
   public touched = false
-  public name = {
-    camel: "",
-    title: "",
-    kebab: "",
-    snake: "",
-  }
-  public value = ""
   public reset = () => {
     this.touched = true
     this.value = this.init || ""
   }
+  public name = (() => {
+    const that = this
+    return {
+      get camel() {
+        return that._name
+      },
+      get title() {
+        return camelToTitle(that._name)
+      },
+      get kebab() {
+        return camelToKebab(that._name)
+      },
+      get snake() {
+        return camelToSnake(that._name)
+      }
+    }
+  })()
+  set value(value: string) {
+    this._value = value
+    this.errors = this.validate(this._value)
+  }
+  get value() {
+    return this._value
+  }
   constructor(props: any) {
-    makeAutoObservable(this)
     this.init = props.init || this.init
     this._name = props.name || ""
     this.validate = props.validate || (() => "")
-    this._value = props.init || ""
-    extendObservable(this, {
-      get name() {
-        const camel = this._name
-        const title = camelToTitle(camel)
-        const kebab = titleToKebab(title)
-        const snake = kebabToSnake(kebab)
-        return {
-          camel,
-          kebab,
-          title,
-          snake,
-        }
-      },
-      set value(value: string) {
-        this._value = value
-        this.errors = this.validate(this._value)
-      },
-      get value() {
-        return this._value
-      }
-    })
+    this.value = props.init || ""
+    makeAutoObservable(this)
   }
 }
 

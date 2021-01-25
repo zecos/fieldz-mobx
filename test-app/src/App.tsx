@@ -6,6 +6,7 @@ import { extendObservable } from 'mobx';
 import { computed, makeObservable } from 'mobx';
 import { camelToTitle, kebabToSnake, titleToKebab } from './util';
 import { makeAutoObservable } from 'mobx';
+import { action } from 'mobx';
 
 const newTodoStore = new FieldStore({
   name: 'newTodo',
@@ -29,12 +30,32 @@ const userFormStore = new FormStore({
   password: "",
 })
 
+class SubmitStore extends FormStore {
+  constructor(props:any) {
+    super(props)
+    makeAutoObservable(this, {rootStore: false})
+  }
+  @action x = () => {
+    console.log("logging", this.values.kebab)
+  }
+}
+const submitStore:any = new FormStore({
+  val1: {
+    init: "",
+    validate: () => "there was an error"
+  },
+  val2: "",
+}, {
+  x() {
+  }
+})
+
 
 function App() {
   const _userFormStore:any = userFormStore
   const [todos, setTodos] = useState<string[]>([])
-  console.log(userFormStore.values.camel)
   const submit = () => {}
+  submitStore.x()
   return (
     <div className="App">
       <button onClick={() => {
@@ -71,6 +92,7 @@ function App() {
       <ul>
         {todos.map((todo, i) => <li key={i}>{todo}</li>)}
       </ul> */}
+      {<FieldView store={submitStore.fields.val1} />}
       <form className="user-form">
         <FieldView store={_userFormStore.fields.username} spellCheck={false} />
         <FieldView store={_userFormStore.fields.password} />
