@@ -23,30 +23,38 @@ type FormProps = {
   submit?: SubmitFn
 }
 
-type Action  = ((...args: any) => any)
-type PropOrAction = FieldStoreProps | Action
-type PropsOrActionsObj = {[key: string]: PropOrAction}
-type ActionsObj = {[key: string]: Action}
+interface IAction extends FormStore {
+  (...args: any[]): any
+}
+type ActionProps = (...args: any[]) => any
+type FieldOrActionProp = FieldStoreProps | ActionProps
+type FieldOrActionProps = {
+  [key: string]: FieldOrActionProp
+}
+type ActionsObj = {[key: string]: IAction}
 
 type PropsObj = {[key: string]: FieldStoreProps}
 type FieldStoreObj = {[key: string]: FieldStore}
-const propsToFieldsOrActions = (props: PropsOrActionsObj): FieldStoreObj => {
+const propsToFieldsOrActions = (props: FieldOrActionProps): {fields: FieldStoreObj, actions: ActionsObj} => {
   const fields: FieldStoreObj = {}
   const actions: ActionsObj = {}
-  const entries = Object.entries<PropOrAction>(props)
+  const entries = Object.entries<FieldOrActionProp>(props)
   for (const [name, field] of entries) {
     if (typeof field === "function") {
-      actions[name] = field
+      actions[name] = field as IAction
       continue
+    } else {
+      const props = parseProps(field)
+      fields[name] = new FieldStore({
+        name,
+        ...props
+      })
     }
-
-    const props = parseProps(field)
-    fields[name] = new FieldStore({
-      name,
-      ...props
-    })
   }
-  return fields
+  return {
+    fields,
+    actions,
+  }
 }
 
 const getByFormat = (format: string, prop: string, fields: FieldStoreObj) => {
@@ -59,8 +67,8 @@ const getByFormat = (format: string, prop: string, fields: FieldStoreObj) => {
 
 export interface IFormStore {
   loading: boolean
-  fields: {[key: string]: FieldStore}
-  actions: {[key: string]: Action}
+  fields: FieldStoreObj
+  actions: ActionsObj
   hasErrors: boolean
   values: {
     camel: { [key: string]: string }
@@ -185,9 +193,13 @@ export class FormStore implements IFormStore {
     }
     return hasErrors
   }
-  constructor(formProps: PropsObj, actions: ActionsObj = {}) {
+  constructor(formProps: {[key:string]: any} = {}) {
     makeAutoObservable(this)
-    extendObservable(this, propsToFieldsOrActions(formProps))
+    const {actions, fields} = propsToFieldsOrActions(formProps)
+    for (const key in actions) {
+      this.actions[key] = actions[key].bind(this)
+    }
+    this.fields = fields
   }
 
   public reset = () => {
