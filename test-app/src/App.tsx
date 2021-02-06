@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite'
-import { FieldView, FieldStore, FormStore } from 'fieldz-mobx'
+import { FieldView, FieldStore, FormStore, IFormStore } from 'fieldz-mobx'
 import './App.scss';
 import { toJS } from 'mobx';
 
@@ -42,11 +42,12 @@ const submitStore = new FormStore({
 const {fields, actions} = submitStore
 
 
+
 function App() {
-  const _userFormStore:any = userFormStore
 
   const [todos, setTodos] = useState<string[]>([])
   const submit = () => {}
+  console.log(fields.val1.errors)
   actions.x()
   return (
     <div className="App">
@@ -86,8 +87,8 @@ function App() {
       </ul> */}
       {<FieldView store={submitStore.fields.val1} />}
       <form className="user-form">
-        <FieldView store={_userFormStore.fields.username} spellCheck={false} />
-        <FieldView store={_userFormStore.fields.password} />
+        <FieldView store={userFormStore.fields.username} spellCheck={false} />
+        <FieldView store={userFormStore.fields.password} type="password" />
         <button onClick={actions.submit}>
           Submit
         </button>

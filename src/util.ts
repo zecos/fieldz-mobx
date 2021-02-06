@@ -23,5 +23,8 @@ export const titleToKebab = title => title
   .replace(/ ([A-Z])/g, match => `-${match.trim()}`)
   .toLowerCase()
 
-
 export const kebabToSnake = (kebab: string) => kebab.replace("-", "_")
+
+export const nameGetter = (obj: any) => {
+
+}

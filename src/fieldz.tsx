@@ -14,7 +14,7 @@ export type Errors = string[] | string | Error[] | void
 type CE = React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
 type KBE = React.KeyboardEvent
 
-interface IFieldStore {
+export interface IFieldStore {
   name: {
     title: string
     kebab: string
@@ -24,6 +24,7 @@ interface IFieldStore {
   value: string
   errors: Errors
   touched: boolean
+  reset: () => any
 }
 
 
@@ -40,7 +41,7 @@ export const parseProps = (_props: FieldStoreProps): FieldStorePropsObj => {
   }
   return _props
 }
-export class FieldStore {
+export class FieldStore implements IFieldStore {
   private _name = ""
   public validate = (val: string) => ""
   public init = ""

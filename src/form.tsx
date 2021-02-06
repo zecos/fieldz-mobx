@@ -1,6 +1,7 @@
 import {
   FieldStoreProps,
   FieldStore,
+  IFieldStore,
   parseProps,
   Errors,
 } from './fieldz'
@@ -16,6 +17,12 @@ import {
 } from './util'
 
 type SubmitFn = (props: typeof FormStore) => any
+interface IStrObj {
+  [key: string]: string | IStrObj
+}
+interface IErrObj {
+  [key: string]: Errors | IErrObj
+}
 
 
 type FormProps = {
@@ -27,22 +34,43 @@ interface IAction extends FormStore {
   (...args: any[]): any
 }
 type ActionProps = (...args: any[]) => any
-type FieldOrActionProp = FieldStoreProps | ActionProps
-type FieldOrActionProps = {
-  [key: string]: FieldOrActionProp
+interface IFormStoreProps {
+  [key: string]: FieldOrActionProp | IFormStoreProps
 }
+type FieldOrActionProp = FieldStoreProps | ActionProps
 type ActionsObj = {[key: string]: IAction}
 
 type PropsObj = {[key: string]: FieldStoreProps}
-type FieldStoreObj = {[key: string]: FieldStore}
-const propsToFieldsOrActions = (props: FieldOrActionProps): {fields: FieldStoreObj, actions: ActionsObj} => {
-  const fields: FieldStoreObj = {}
+interface IFieldStoreObj {
+  [key: string]: IFieldStore
+}
+interface IFieldOrFormStoreObj {
+  [key: string]: IFieldStore | IFormStore
+}
+
+const fieldKeys = ["validate", "name", "init"]
+const checkIsFieldProps = (obj: any) => {
+  if (typeof obj !== "object") {
+    return false
+  }
+  for (const key in obj) {
+    if (!fieldKeys.includes(key)) {
+      return false
+    }
+  }
+  return true
+}
+const propsToFieldsOrActions = (props: IFormStoreProps) => {
+  const fields: IFieldOrFormStoreObj = {}
   const actions: ActionsObj = {}
   const entries = Object.entries<FieldOrActionProp>(props)
   for (const [name, field] of entries) {
     if (typeof field === "function") {
       actions[name] = field as IAction
       continue
+    } else if (typeof field === "object" && !checkIsFieldProps(field)) {
+      fields[name] = new FormStore(field as IFormStoreProps)
+      fields[name].name = name
     } else {
       const props = parseProps(field)
       fields[name] = new FieldStore({
@@ -57,56 +85,74 @@ const propsToFieldsOrActions = (props: FieldOrActionProps): {fields: FieldStoreO
   }
 }
 
-const getByFormat = (format: string, prop: string, fields: FieldStoreObj) => {
+const getByFormat = (format: string, prop: string, formProp: string, fields: IFieldOrFormStoreObj) => {
   const result = {} as {[key: string]: string}
-  for (const field of Object.values<FieldStore>(fields)) {
-    result[field.name[format]] = field[prop]
+  for (const field of Object.values<IFieldStore | IFormStore>(fields)) {
+    if (field instanceof FieldStore) {
+      result[field.name[format]] = field[prop]
+    } else if (field instanceof FormStore) {
+      result[field.name!![format]] = field[formProp]
+    }
   }
   return result
 }
 
 export interface IFormStore {
   loading: boolean
-  fields: FieldStoreObj
+  fields: IFieldOrFormStoreObj
   actions: ActionsObj
   hasErrors: boolean
+  name?: string
   values: {
-    camel: { [key: string]: string }
-    kebab: { [key: string]: string }
-    title: { [key: string]: string }
-    snake: { [key: string]: string }
+    camel: IStrObj
+    kebab: IStrObj
+    title: IStrObj
+    snake: IStrObj
   }
   errors: {
-    camel: { [key: string]: Errors }
-    kebab: { [key: string]: Errors }
-    title: { [key: string]: Errors }
-    snake: { [key: string]: Errors }
+    camel: IErrObj
+    kebab: IErrObj
+    title: IErrObj
+    snake: IErrObj
+  }
+  reset: () => any
+}
+
+const setItems = (
+    that: FormStore,
+    items: any,
+    fieldProp: string,
+    formProp: string
+) => {
+  for (const key in items) {
+    if (!(key in that.fields)) {
+      throw new Error(`Could not find field ${key}`)
+    }
+  }
+  for (const key in items) {
+    if (that.fields[key] instanceof FieldStore) {
+      (that.fields[key] as FieldStore)[fieldProp] = items[key]
+    } else if (that.fields[key] instanceof FormStore) {
+      (that.fields[key] as unknown as IFormStore)[formProp] = items[key]
+    }
   }
 }
 
-
 export class FormStore implements IFormStore {
-  public fields: FieldStoreObj = {}
+  public fields: IFieldOrFormStoreObj = {}
   public actions: ActionsObj = {}
   public loading = false
   public values = (() => {
     const that = this
     return {
       get camel() {
-        return getByFormat("camel", "value", that.fields)
+        return getByFormat("camel", "value", "values", that.fields)
       },
-      set camel(obj: {[key:string]: string}) {
-        for (const key in obj) {
-          if (!(key in that.fields)) {
-            throw new Error(`Could not find field ${key}`)
-          }
-        }
-        for (const key in obj) {
-          that.fields[key].value = obj[key]
-        }
+      set camel(obj: {[key:string]: any}) {
+        setItems(that, obj, "value","values")
       },
       get snake() {
-        return getByFormat("snake", "value", that.fields)
+        return getByFormat("snake", "value", "values", that.fields)
       },
       set snake(_obj: {[key:string]: string}) {
         const obj = Object.assign({}, _obj)
@@ -115,17 +161,10 @@ export class FormStore implements IFormStore {
           delete obj[key]
           obj[camelToSnake(key)] = temp
         }
-        for (const key in obj) {
-          if (!(key in that.fields)) {
-            throw new Error(`Could not find field ${key}`)
-          }
-        }
-        for (const key in obj) {
-          that.fields[key].value = obj[key]
-        }
+        setItems(that, obj, "value","values")
       },
       get kebab() {
-        return getByFormat("kebab", "value", that.fields)
+        return getByFormat("kebab", "value", "values", that.fields)
       },
       set kebab(_obj: {[key:string]: string}) {
         const obj = Object.assign({}, _obj)
@@ -134,17 +173,10 @@ export class FormStore implements IFormStore {
           delete obj[key]
           obj[camelToKebab(key)] = temp
         }
-        for (const key in obj) {
-          if (!(key in that.fields)) {
-            throw new Error(`Could not find field ${key}`)
-          }
-        }
-        for (const key in obj) {
-          that.fields[key].value = obj[key]
-        }
+        setItems(that, obj, "value","values")
       },
       get title() {
-        return getByFormat("title", "value", that.fields)
+        return getByFormat("title", "value", "values", that.fields)
       },
       set title(_obj: {[key:string]: string}) {
         const obj = Object.assign({}, _obj)
@@ -153,14 +185,7 @@ export class FormStore implements IFormStore {
           delete obj[key]
           obj[camelToTitle(key)] = temp
         }
-        for (const key in obj) {
-          if (!(key in that.fields)) {
-            throw new Error(`Could not find field ${key}`)
-          }
-        }
-        for (const key in obj) {
-          that.fields[key].value = obj[key]
-        }
+        setItems(that, obj, "value","values")
       },
     }
   })()
@@ -168,16 +193,16 @@ export class FormStore implements IFormStore {
     const that = this
     return {
       get camel() {
-        return getByFormat("camel", "errors", that.fields)
+        return getByFormat("camel", "errors", "errors", that.fields)
       },
       get snake() {
-        return getByFormat("snake", "errors", that.fields)
+        return getByFormat("snake", "errors", "errors", that.fields)
       },
       get kebab() {
-        return getByFormat("kebab", "errors", that.fields)
+        return getByFormat("kebab", "errors", "errors", that.fields)
       },
       get title() {
-        return getByFormat("title", "errors", that.fields)
+        return getByFormat("title", "errors", "errors", that.fields)
       },
     }
   })()
@@ -186,14 +211,18 @@ export class FormStore implements IFormStore {
     let hasErrors = false
     for (const fieldKey in this.fields) {
       const field = this.fields[fieldKey]
-      if (field.errors && field.errors.length) {
+      if (field instanceof FieldStore && field.errors && field.errors.length) {
+        hasErrors = true
+        break
+      }
+      if (field instanceof FormStore && field.hasErrors) {
         hasErrors = true
         break
       }
     }
     return hasErrors
   }
-  constructor(formProps: {[key:string]: any} = {}) {
+  constructor(formProps: IFormStoreProps = {}) {
     makeAutoObservable(this)
     const {actions, fields} = propsToFieldsOrActions(formProps)
     for (const key in actions) {
@@ -203,7 +232,7 @@ export class FormStore implements IFormStore {
   }
 
   public reset = () => {
-    for (const field of Object.values<FieldStore>(this.fields)) {
+    for (const field of Object.values<IFieldStore | IFormStore>(this.fields)) {
       field.reset()
     }
   }
