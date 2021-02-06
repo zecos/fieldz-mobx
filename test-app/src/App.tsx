@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite'
 import { FieldView, FieldStore, FormStore, IFormStore } from 'fieldz-mobx'
 import './App.scss';
-import { toJS } from 'mobx';
+import { toJS, toJSON } from 'mobx';
 
 const newTodoStore = new FieldStore({
   name: 'newTodo',
@@ -25,16 +25,22 @@ const userFormStore = new FormStore({
   },
   password: "",
 })
-const submitStore = new FormStore({
+const submitStore:IFormStore = new FormStore({
   val1: {
     init: "",
     validate: () => "there was an error"
   },
+  nestingval: {
+    nested: "",
+    nested2: "",
+  },
   val2: "",
   x() {
-    console.log('values', submitStore.values.camel)
+    for (const key in toJS(submitStore.values.camel)) {
+      console.log(key, toJS(submitStore.values.camel[key]))
+    }
   },
-  submit(e) {
+  submit(e:any) {
     e.preventDefault()
     console.log("submitting")
   }

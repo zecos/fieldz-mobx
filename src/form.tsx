@@ -14,9 +14,9 @@ import {
   camelToSnake,
   camelToTitle,
   camelToKebab,
+  nameGetter,
 } from './util'
 
-type SubmitFn = (props: typeof FormStore) => any
 interface IStrObj {
   [key: string]: string | IStrObj
 }
@@ -24,26 +24,16 @@ interface IErrObj {
   [key: string]: Errors | IErrObj
 }
 
-
-type FormProps = {
-  fields: {[key: string]: FieldStoreProps}
-  submit?: SubmitFn
-}
-
-interface IAction extends FormStore {
+interface IAction extends IFormStore {
   (...args: any[]): any
 }
 type ActionProps = (...args: any[]) => any
-interface IFormStoreProps {
+export interface IFormStoreProps {
   [key: string]: FieldOrActionProp | IFormStoreProps
 }
 type FieldOrActionProp = FieldStoreProps | ActionProps
 type ActionsObj = {[key: string]: IAction}
 
-type PropsObj = {[key: string]: FieldStoreProps}
-interface IFieldStoreObj {
-  [key: string]: IFieldStore
-}
 interface IFieldOrFormStoreObj {
   [key: string]: IFieldStore | IFormStore
 }
@@ -70,7 +60,7 @@ const propsToFieldsOrActions = (props: IFormStoreProps) => {
       continue
     } else if (typeof field === "object" && !checkIsFieldProps(field)) {
       fields[name] = new FormStore(field as IFormStoreProps)
-      fields[name].name = name
+      fields[name].name.camel = name
     } else {
       const props = parseProps(field)
       fields[name] = new FieldStore({
@@ -91,7 +81,7 @@ const getByFormat = (format: string, prop: string, formProp: string, fields: IFi
     if (field instanceof FieldStore) {
       result[field.name[format]] = field[prop]
     } else if (field instanceof FormStore) {
-      result[field.name!![format]] = field[formProp]
+      result[field.name!![format]] = field[formProp][format]
     }
   }
   return result
@@ -99,10 +89,15 @@ const getByFormat = (format: string, prop: string, formProp: string, fields: IFi
 
 export interface IFormStore {
   loading: boolean
-  fields: IFieldOrFormStoreObj
+  fields: any //IFieldOrFormStoreObj
   actions: ActionsObj
   hasErrors: boolean
-  name?: string
+  name: {
+    title: string
+    kebab: string
+    camel: string
+    snake: string
+  }
   values: {
     camel: IStrObj
     kebab: IStrObj
@@ -131,15 +126,17 @@ const setItems = (
   }
   for (const key in items) {
     if (that.fields[key] instanceof FieldStore) {
-      (that.fields[key] as FieldStore)[fieldProp] = items[key]
+      ;(that.fields[key] as FieldStore)[fieldProp] = items[key]
     } else if (that.fields[key] instanceof FormStore) {
-      (that.fields[key] as unknown as IFormStore)[formProp] = items[key]
+      ;(that.fields[key] as unknown as IFormStore)[formProp] = items[key]
     }
   }
 }
 
 export class FormStore implements IFormStore {
-  public fields: IFieldOrFormStoreObj = {}
+  public fields: any /*IFieldOrFormStoreObj*/ = {}
+  private _name = ""
+  public name = (() => nameGetter(this))()
   public actions: ActionsObj = {}
   public loading = false
   public values = (() => {
@@ -226,7 +223,7 @@ export class FormStore implements IFormStore {
     makeAutoObservable(this)
     const {actions, fields} = propsToFieldsOrActions(formProps)
     for (const key in actions) {
-      this.actions[key] = actions[key].bind(this)
+      this.actions[key] = (actions[key] as any).bind(this)
     }
     this.fields = fields
   }

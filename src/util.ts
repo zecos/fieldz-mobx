@@ -25,6 +25,31 @@ export const titleToKebab = title => title
 
 export const kebabToSnake = (kebab: string) => kebab.replace("-", "_")
 
-export const nameGetter = (obj: any) => {
-
+export const nameGetter = (that: any) => {
+  return {
+    get camel() {
+      return that._name
+    },
+    set camel(val: string) {
+      that._name = val
+    },
+    get title() {
+      return camelToTitle(that._name)
+    },
+    set title(val: string) {
+      that._name = titleToCamel(val)
+    },
+    get kebab() {
+      return camelToKebab(that._name)
+    },
+    set kebab(val: string) {
+      that._name = kebabToCamel(val)
+    },
+    get snake() {
+      return camelToSnake(that._name)
+    },
+    set snake(val: string) {
+      that._name = kebabToSnake(val)
+    },
+  }
 }

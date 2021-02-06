@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { camelToTitle, titleToKebab, kebabToSnake, camelToKebab, camelToSnake } from './util'
+import { camelToTitle, titleToKebab, kebabToSnake, camelToKebab, camelToSnake, nameGetter } from './util'
 import styles from './fieldz.css'
 import { makeAutoObservable, computed, extendObservable } from 'mobx'
 import { observer } from 'mobx-react-lite'
@@ -52,23 +52,8 @@ export class FieldStore implements IFieldStore {
     this.touched = true
     this.value = this.init || ""
   }
-  public name = (() => {
-    const that = this
-    return {
-      get camel() {
-        return that._name
-      },
-      get title() {
-        return camelToTitle(that._name)
-      },
-      get kebab() {
-        return camelToKebab(that._name)
-      },
-      get snake() {
-        return camelToSnake(that._name)
-      }
-    }
-  })()
+  public name = (() => nameGetter(this))()
+
   set value(value: string) {
     this._value = value
     this.errors = this.validate(this._value)
@@ -142,7 +127,7 @@ export const FieldView: React.FC<FCProps> = observer(props => {
   let handleKeyDown;
   if (props.onEnter) {
     handleKeyDown = (e: KBE) => {
-      if (e.keyCode === 13) {
+      if (e.key === "Enter") {
         props.onEnter!(e)
       }
     }
