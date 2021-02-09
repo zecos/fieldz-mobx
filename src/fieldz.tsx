@@ -139,30 +139,28 @@ export const FieldView: React.FC<FCProps> = observer(props => {
     store.touched = true
   }
   return (
-    <div className={`${styles.container} ${getClassName(props)}`}>
-      <label
-        htmlFor={props.store.name.kebab}
-        className={`${styles.textLabel} ${getClassName(props, "-label")}`}>
-        {typeof props.store.name === "undefined" ? "" : (
-          <span className={`${styles.textActualLabel} ${getClassName(props, "-actual-label")}`}>
-            {props.store.name.title}
-          </span>
-        )}
-        <input
-          id={(props.store.name) && props.store.name.kebab}
-          className={`${styles.textInput} ${getClassName(props, "-input")}`}
-          value={props.store.value}
-          onChange={props.handleChange || handleChange}
-          onKeyDown={props.handleKeyDown || handleKeyDown}
-          onBlur={handleBlur}
-          spellCheck={props.spellCheck}
-          autoCorrect={props.autoCorrect}
-          autoCapitalize={props.autoCapitalize}
-          autoComplete={props.autoComplete}
-          type={props.type}
-        />
-        {props.store.touched && renderErrors(props.store.errors || [])}
-      </label>
-    </div>
+    <label
+      htmlFor={props.store.name.kebab}
+      className={`${styles.textLabel} ${getClassName(props)}`}>
+      {typeof props.store.name === "undefined" ? "" : (
+        <span className={`${styles.textActualLabel} ${getClassName(props, "-actual-label")}`}>
+          {props.store.name.title}
+        </span>
+      )}
+      <input
+        id={(props.store.name) && props.store.name.kebab}
+        className={`${styles.textInput} ${getClassName(props, "-input")}`}
+        value={props.store.value}
+        onChange={props.handleChange || handleChange}
+        onKeyDown={props.handleKeyDown || handleKeyDown}
+        onBlur={handleBlur}
+        spellCheck={props.spellCheck}
+        autoCorrect={props.autoCorrect}
+        autoCapitalize={props.autoCapitalize}
+        autoComplete={props.autoComplete}
+        type={props.type}
+      />
+      {props.store.touched && renderErrors(props.store.errors || [])}
+    </label>
   )
 })
