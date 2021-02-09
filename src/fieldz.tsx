@@ -87,7 +87,7 @@ interface FCProps {
 const getClassName = (props: FCProps, addendum=""): string => {
   let className: string = props.className || ''
   if (!className) {
-    className = 'fieldz-input' + addendum
+    className = 'fieldz-view' + addendum
     if (props.store.name) {
       className += ` ${className}-${props.store.name.kebab+addendum}`
     }
