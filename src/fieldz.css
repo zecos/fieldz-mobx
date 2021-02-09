@@ -6,14 +6,15 @@
   box-sizing: border-box;
 }
 
-.container {
+
+.textLabel {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
 }
 
-.textLabel {
-  padding: 0 .8rem;
+.textActualLabel {
+  padding: 0 .8rem 0 0;
   display: block;
 }
 

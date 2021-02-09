@@ -24,15 +24,18 @@ interface IErrObj {
   [key: string]: Errors | IErrObj
 }
 
-interface IAction extends IFormStore {
-  (...args: any[]): any
+interface IAction {
+  (...args: any[]): any | void
 }
-type ActionProps = (...args: any[]) => any
+
+interface IActionProps {
+  [key: string]: IAction
+}
 export interface IFormStoreProps {
   [key: string]: FieldOrActionProp | IFormStoreProps
 }
-type FieldOrActionProp = FieldStoreProps | ActionProps
-type ActionsObj = {[key: string]: IAction}
+type FieldOrActionProp = FieldStoreProps | IAction
+type ActionsObj = {[key: string]: any /*IAction*/}
 
 interface IFieldOrFormStoreObj {
   [key: string]: IFieldStore | IFormStore

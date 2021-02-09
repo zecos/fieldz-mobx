@@ -25,6 +25,7 @@ const userFormStore = new FormStore({
   },
   password: "",
 })
+
 const submitStore:IFormStore = new FormStore({
   val1: {
     init: "",
@@ -35,10 +36,8 @@ const submitStore:IFormStore = new FormStore({
     nested2: "",
   },
   val2: "",
-  x() {
-    for (const key in toJS(submitStore.values.camel)) {
-      console.log(key, toJS(submitStore.values.camel[key]))
-    }
+  x(this: FormStore) {
+    console.log(this.values.camel)
   },
   submit(e:any) {
     e.preventDefault()
