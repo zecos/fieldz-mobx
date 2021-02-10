@@ -222,6 +222,22 @@ export class FormStore implements IFormStore {
     }
     return hasErrors
   }
+
+  set touched(val: boolean) {
+    for (const field of Object.values<any>(this.fields)) {
+      field.touched = val
+    }
+  }
+
+  get touched() {
+    for (const field of Object.values<any>(this.fields)) {
+      if (field.touched) {
+        return true
+      }
+    }
+    return false
+  }
+
   constructor(formProps: IFormStoreProps = {}) {
     makeAutoObservable(this)
     const {actions, fields} = propsToFieldsOrActions(formProps)
