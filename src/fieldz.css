@@ -30,3 +30,6 @@
   display: block;
   max-width: 20rem;
 }
+.textInput::placeholder {
+  color: transparent;
+}

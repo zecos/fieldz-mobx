@@ -77,6 +77,7 @@ interface FCProps {
   spellCheck?: boolean
   autoCorrect?: "on" | "off" | boolean
   autoCapitalize?: "on" | "off" | boolean
+  placeholder?: string
   autoComplete?: "on" | "off" | boolean
   onChange?: (e?: CE) => any
   onKeyDown?: (e?: CE) => any
@@ -175,6 +176,7 @@ export const FieldView: React.FC<FCProps> = observer(props => {
         onChange={props.onChange || handleChange}
         onKeyDown={props.onKeyDown || handleKeyDown}
         onBlur={handleBlur}
+        placeholder={props.placeholder || props.store.name.title}
         onFocus={handleFocus}
         spellCheck={props.spellCheck}
         autoCorrect={normalizeOnOff(props.autoCorrect)}
