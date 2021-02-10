@@ -93,7 +93,7 @@ const getClassName = (props: FCProps, addendum=""): string => {
   if (!className) {
     className = 'fieldz-view' + addendum
     if (props.store.name) {
-      className += ` ${className}-${props.store.name.kebab+addendum}`
+      className += ` ${className}-${props.store.name.kebab}`
     }
   }
   return className
@@ -163,7 +163,7 @@ export const FieldView: React.FC<FCProps> = observer(props => {
   return (
     <label
       htmlFor={props.store.name.kebab}
-      className={`${styles.textLabel} ${getClassName(props)} ${isFocused ? "focused" : "blurred"} ${props.store.errors?.length ? "has-errors" : "valid"} ${props.store.touched ? "touched" : "untouched"} ${props.store.value.length ? "non-empty" : "empty"}`}>
+      className={`${styles.textLabel} ${getClassName(props)} ${isFocused ? "focused" : "blurred"} ${props.store.errors?.length ? "has-errors" : "valid"} ${props.store.touched ? "touched" : "untouched"} ${props.store.value?.length ? "non-empty" : "empty"}`}>
       {typeof props.store.name === "undefined" ? "" : (
         <span className={`${styles.textActualLabel} ${getClassName(props, "-actual-label")}`}>
           {props.store.name.title}
@@ -185,6 +185,7 @@ export const FieldView: React.FC<FCProps> = observer(props => {
         required={props.required}
         type={props.type}
       />
+      {props.children ? props.children : ""}
       {props.store.touched && renderErrors(props.store.errors || [])}
     </label>
   )
