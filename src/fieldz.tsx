@@ -75,13 +75,16 @@ interface FCProps {
   children?: React.ReactNode
   onEnter?: (e: KBE) => void
   spellCheck?: boolean
-  autoCorrect?: "on" | "off"
-  autoCapitalize?: "on" | "off"
-  autoComplete?: "on" | "off"
-  handleChange?: (e: CE) => any
-  handleKeyDown?: (e: CE) => any
+  autoCorrect?: "on" | "off" | boolean
+  autoCapitalize?: "on" | "off" | boolean
+  autoComplete?: "on" | "off" | boolean
+  onChange?: (e?: CE) => any
+  onKeyDown?: (e?: CE) => any
+  onBlur?: (e?: CE) => any
+  onFocus?: (e?: CE) => any
   type?: string
   store: IFieldStore
+  required?: boolean
 }
 
 const getClassName = (props: FCProps, addendum=""): string => {
@@ -122,7 +125,15 @@ const renderErrors = (errors: Errors) => {
   )
 }
 
+const normalizeOnOff = option => {
+  if (typeof option === "boolean") {
+    return option ? "on" : "off"
+  }
+  return option
+}
+
 export const FieldView: React.FC<FCProps> = observer(props => {
+  const [isFocused, setIsFocused] = React.useState(false)
   const { store } = props
   let handleKeyDown;
   if (props.onEnter) {
@@ -135,13 +146,23 @@ export const FieldView: React.FC<FCProps> = observer(props => {
   const handleChange = (e: CE) => {
     store.value = e.target.value
   }
-  const handleBlur = () => {
+  const handleBlur = (e: CE) => {
     store.touched = true
+    setIsFocused(false)
+    if (props.onBlur) {
+      props.onBlur(e)
+    }
+  }
+  const handleFocus = (e: CE) => {
+    setIsFocused(true)
+    if (props.onFocus) {
+      props.onFocus(e)
+    }
   }
   return (
     <label
       htmlFor={props.store.name.kebab}
-      className={`${styles.textLabel} ${getClassName(props)}`}>
+      className={`${styles.textLabel} ${getClassName(props)} ${isFocused ? "focused" : ""} ${props.store.errors.length ? "" : "valid"} ${props.store.touched ? "touched" : ""} ${props.store.value.length ? "non-empty" : ""}`}>
       {typeof props.store.name === "undefined" ? "" : (
         <span className={`${styles.textActualLabel} ${getClassName(props, "-actual-label")}`}>
           {props.store.name.title}
@@ -151,13 +172,15 @@ export const FieldView: React.FC<FCProps> = observer(props => {
         id={(props.store.name) && props.store.name.kebab}
         className={`${styles.textInput} ${getClassName(props, "-input")}`}
         value={props.store.value}
-        onChange={props.handleChange || handleChange}
-        onKeyDown={props.handleKeyDown || handleKeyDown}
+        onChange={props.onChange || handleChange}
+        onKeyDown={props.onKeyDown || handleKeyDown}
         onBlur={handleBlur}
+        onFocus={handleFocus}
         spellCheck={props.spellCheck}
-        autoCorrect={props.autoCorrect}
-        autoCapitalize={props.autoCapitalize}
-        autoComplete={props.autoComplete}
+        autoCorrect={normalizeOnOff(props.autoCorrect)}
+        autoCapitalize={normalizeOnOff(props.autoCapitalize)}
+        autoComplete={normalizeOnOff(props.autoComplete)}
+        required={props.required}
         type={props.type}
       />
       {props.store.touched && renderErrors(props.store.errors || [])}
