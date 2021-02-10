@@ -119,7 +119,7 @@ const renderErrors = (errors: Errors) => {
     }
   }
   return (
-    <div className={styles.errors}>
+    <div className={`${styles.errors} fieldz-errors`}>
       {resultErrors.map(renderError)}
     </div>
   )
