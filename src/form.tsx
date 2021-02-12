@@ -94,7 +94,7 @@ export interface IFormStore {
   loading: boolean
   fields: any //IFieldOrFormStoreObj
   actions: ActionsObj
-  hasErrors: boolean
+  valid: boolean
   name: {
     title: string
     kebab: string
@@ -207,20 +207,20 @@ export class FormStore implements IFormStore {
     }
   })()
 
-  get hasErrors() {
-    let hasErrors = false
+  get valid() {
+    let invalid = false
     for (const fieldKey in this.fields) {
       const field = this.fields[fieldKey]
       if (field instanceof FieldStore && field.errors && field.errors.length) {
-        hasErrors = true
+        invalid = true
         break
       }
-      if (field instanceof FormStore && field.hasErrors) {
-        hasErrors = true
+      if (field instanceof FormStore && !field.valid) {
+        invalid = true
         break
       }
     }
-    return hasErrors
+    return !invalid
   }
 
   set touched(val: boolean) {
