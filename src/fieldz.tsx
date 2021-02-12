@@ -163,7 +163,7 @@ export const FieldView: React.FC<FCProps> = observer(props => {
   return (
     <label
       htmlFor={props.store.name.kebab}
-      className={`${styles.textLabel} ${getClassName(props)} ${isFocused ? "focused" : "blurred"} ${props.store.errors?.length ? "has-errors" : "valid"} ${props.store.touched ? "touched" : "untouched"} ${props.store.value?.length ? "non-empty" : "empty"}`}>
+      className={`${styles.textLabel} ${getClassName(props)} ${isFocused ? "focused" : "blurred"} ${props.store.errors?.length ? "invalid" : "valid"} ${props.store.touched ? "touched" : "untouched"} ${props.store.value?.length ? "non-empty" : "empty"}`}>
       {typeof props.store.name === "undefined" ? "" : (
         <span className={`${styles.textActualLabel} ${getClassName(props, "-actual-label")}`}>
           {props.store.name.title}
