@@ -23,6 +23,7 @@ export interface IFieldStore {
   }
   value: string
   errors: Errors
+  valid: boolean
   touched: boolean
   reset: () => any
 }
@@ -53,6 +54,10 @@ export class FieldStore implements IFieldStore {
     this.value = this.init || ""
   }
   public name = (() => nameGetter(this))()
+
+  get valid() {
+    return !(this.errors && this.errors.length)
+  }
 
   set value(value: string) {
     this._value = value
@@ -86,6 +91,7 @@ interface FCProps {
   type?: string
   store: IFieldStore
   required?: boolean
+  valid?: boolean
 }
 
 const getClassName = (props: FCProps, addendum=""): string => {

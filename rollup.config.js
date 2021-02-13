@@ -1,10 +1,10 @@
-import typescript from 'rollup-plugin-typescript2'
-import commonjs from 'rollup-plugin-commonjs'
+import typescript from '@rollup/plugin-typescript'
+import commonjs from '@rollup/plugin-commonjs'
 import external from 'rollup-plugin-peer-deps-external'
 // import postcss from 'rollup-plugin-postcss-modules'
 import postcss from 'rollup-plugin-postcss'
-import resolve from 'rollup-plugin-node-resolve'
-import url from 'rollup-plugin-url'
+import resolve from '@rollup/plugin-node-resolve'
+import url from '@rollup/plugin-url'
 import svgr from '@svgr/rollup'
 
 import pkg from './package.json'
@@ -35,8 +35,8 @@ export default {
     svgr(),
     resolve(),
     typescript({
-      rollupCommonJSResolveHack: true,
-      clean: true
+      lib: ["es5", "es6", "dom"],
+      target: "es5",
     }),
     commonjs()
   ]

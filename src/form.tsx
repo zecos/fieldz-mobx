@@ -92,6 +92,9 @@ const getByFormat = (format: string, prop: string, formProp: string, fields: IFi
 
 export interface IFormStore {
   loading: boolean
+  submit: (...args) => any
+  submitAttempted: boolean
+  serverErrors: string[]
   fields: any //IFieldOrFormStoreObj
   actions: ActionsObj
   valid: boolean
@@ -136,12 +139,88 @@ const setItems = (
   }
 }
 
+const parseServerErrors = (err): any => {
+  if (typeof err === "string") {
+    return [err]
+  } else if (Array.isArray(err)) {
+    if (err.every(e => e instanceof Error)) {
+      return err.map(e => e.message)
+    } else if (err.every(e => typeof e === "string")) {
+      return err
+    } else {
+      console.warn("Couldn't parse the error type of ", err)
+      return err
+    }
+  } else if (err instanceof Error) {
+    return [err.message]
+  } else if (typeof err === "object") {
+    if (typeof err.message === "string") {
+      return [err.message]
+    } else if (typeof err.data !== "undefined") {
+      return parseServerErrors(err.data)
+    } else {
+      console.warn("Couldn't parse the error type of ", err)
+      return err
+    }
+  } else {
+    console.warn("Couldn't parse the error type of ", err)
+    return err
+  }
+}
+
+const respProps = [
+  "status",
+  "ok",
+  "redirected",
+]
 export class FormStore implements IFormStore {
-  public fields: any /*IFieldOrFormStoreObj*/ = {}
+  public fields: IFieldOrFormStoreObj = {}
   private _name = ""
   public name = (() => nameGetter(this))()
   public actions: ActionsObj = {}
   public loading = false
+  private _submit = () => {}
+  public serverErrors: string[] = []
+  public submitAttempted = false
+  public submit = (...args) => new Promise(async (res, rej) => {
+    if (args[0] && typeof args[0].preventDefault === "function") {
+      args[0].preventDefault()
+    }
+    if (!(typeof this._submit ==="function")) {
+      console.warn("You haven't provided a submit function.")
+    }
+    if (!this.valid) {
+      this.touched = true
+      this.submitAttempted = true
+      return
+    }
+    this.loading = true
+    try {
+      // @ts-ignore
+      const resp:any = await this._submit(...args)
+      this.loading = false
+      if ((typeof Response !== "undefined") && (resp instanceof Response)) {
+        if ((resp.status / 100 | 0) !== 2) {
+          const type = resp.headers.get('content-type')
+          const resIsJson = type && type.indexOf("application/json") > -1
+
+          const result = {
+            data: await (resIsJson ? resp.json() : resp.text()),
+          }
+          this.serverErrors = parseServerErrors(result.data)
+          for (const key of respProps) {
+            result[key] = resp[key]
+          }
+          return rej(result)
+        }
+      }
+      res(resp)
+    } catch (err) {
+      this.serverErrors = parseServerErrors(err)
+      this.loading = false
+      rej(err)
+    }
+  })
   public values = (() => {
     const that = this
     return {
@@ -238,8 +317,12 @@ export class FormStore implements IFormStore {
     return false
   }
 
-  constructor(formProps: IFormStoreProps = {}) {
+  constructor(_formProps: IFormStoreProps = {}) {
     makeAutoObservable(this)
+    const {submit, ...formProps} = _formProps
+    if (typeof submit === "function") {
+      this._submit = submit
+    }
     const {actions, fields} = propsToFieldsOrActions(formProps)
     for (const key in actions) {
       this.actions[key] = (actions[key] as any).bind(this)
@@ -250,6 +333,8 @@ export class FormStore implements IFormStore {
   public reset = () => {
     for (const field of Object.values<IFieldStore | IFormStore>(this.fields)) {
       field.reset()
+      this.touched = false
+      this.submitAttempted = false
     }
   }
 }
