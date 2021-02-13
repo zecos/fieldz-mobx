@@ -194,6 +194,7 @@ export class FormStore implements IFormStore {
       this.submitAttempted = true
       return
     }
+    this.serverErrors = [""]
     this.loading = true
     try {
       // @ts-ignore
