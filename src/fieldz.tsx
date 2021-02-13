@@ -66,6 +66,7 @@ export class FieldStore implements IFieldStore {
   get value() {
     return this._value
   }
+
   constructor(props: any) {
     this.init = props.init || this.init
     this._name = props.name || ""

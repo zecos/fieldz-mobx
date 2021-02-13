@@ -208,6 +208,7 @@ export class FormStore implements IFormStore {
             data: await (resIsJson ? resp.json() : resp.text()),
           }
           this.serverErrors = parseServerErrors(result.data)
+          console.error(this.serverErrors)
           for (const key of respProps) {
             result[key] = resp[key]
           }
@@ -217,6 +218,7 @@ export class FormStore implements IFormStore {
       res(resp)
     } catch (err) {
       this.serverErrors = parseServerErrors(err)
+      console.error(this.serverErrors)
       this.loading = false
       rej(err)
     }
