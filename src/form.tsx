@@ -16,6 +16,8 @@ import {
   camelToKebab,
   nameGetter,
 } from './util'
+import * as React from 'react'
+import { observer } from 'mobx-react-lite'
 
 interface IStrObj {
   [key: string]: string | IStrObj
@@ -183,9 +185,6 @@ export class FormStore implements IFormStore {
   public serverErrors: string[] = []
   public submitAttempted = false
   public submit = (...args) => new Promise(async (res, rej) => {
-    if (args[0] && typeof args[0].preventDefault === "function") {
-      args[0].preventDefault()
-    }
     if (!(typeof this._submit ==="function")) {
       console.warn("You haven't provided a submit function.")
     }
@@ -321,7 +320,6 @@ export class FormStore implements IFormStore {
   }
 
   constructor(_formProps: IFormStoreProps = {}) {
-    makeAutoObservable(this)
     const {submit, ...formProps} = _formProps
     if (typeof submit === "function") {
       this._submit = submit
@@ -331,6 +329,7 @@ export class FormStore implements IFormStore {
       this.actions[key] = (actions[key] as any).bind(this)
     }
     this.fields = fields
+    makeAutoObservable(this)
   }
 
   public reset = () => {
@@ -341,3 +340,43 @@ export class FormStore implements IFormStore {
     }
   }
 }
+
+const getClassName = (props: FCProps, addendum=""): string => {
+  let className: string = props.className || ''
+  className += ' fieldz-form-view' + addendum
+  if (props.store.name) {
+    className += ` ${className}-${props.store.name.kebab}`
+  }
+  return className
+}
+
+interface FCProps {
+  store: IFieldStore
+  className?: string
+  children?: React.ReactNode
+  onSubmit?: (...args) => any
+}
+export const FormView: React.FC<FCProps> = observer(props => {
+  const { store } = props
+  React.useEffect(() => {
+    store.reset()
+    store.touched = false
+    return () => {
+      store.reset()
+      store.touched = false
+    }
+  }, [])
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (typeof props.onSubmit === "function") {
+      return props.onSubmit(e)
+    } else if (typeof store.submit === "function") {
+      store.submit(e).catch(()=>{})
+    }
+  }
+  return (
+    <form className={getClassName(props)} onSubmit={submit}>
+      {props.children}
+    </form>
+  )
+})

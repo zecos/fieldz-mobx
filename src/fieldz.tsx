@@ -56,7 +56,8 @@ export class FieldStore implements IFieldStore {
   public name = (() => nameGetter(this))()
 
   get valid() {
-    return !(this.errors && this.errors.length)
+    const valid = !(this.errors && this.errors.length)
+    return valid
   }
 
   set value(value: string) {
@@ -97,11 +98,9 @@ interface FCProps {
 
 const getClassName = (props: FCProps, addendum=""): string => {
   let className: string = props.className || ''
-  if (!className) {
-    className = 'fieldz-view' + addendum
-    if (props.store.name) {
-      className += ` ${className}-${props.store.name.kebab}`
-    }
+  className += ' fieldz-view' + addendum
+  if (props.store.name) {
+    className += ` ${className}-${props.store.name.kebab}`
   }
   return className
 }
